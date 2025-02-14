@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+authors = ["_Kerman <kermanx@qq.com>"]
+categories = ["compilers", "development-tools", "web-programming"]
+edition = "2021"
+homepage = "https://kermanx.github.io/js.rs"
+keywords = ["JavaScript", "Rust"]
+license = "MIT"
+repository = "https://github.com/KermanX/js.rs"
+rust-version = "1.84"
+description = "JavaScript in Rust Syntax."
+
+[workspace.dependencies]
+syn = { version = "2.0.98" }
+
+jsrs_parser = { path = "crates/parser" }
+jsrs_transpiler = { path = "crates/transpiler" }

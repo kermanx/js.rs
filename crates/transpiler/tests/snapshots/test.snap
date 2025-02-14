@@ -1,0 +1,28 @@
+---
+source: crates/transpiler/tests/mod.rs
+input_file: crates/transpiler/tests/fixtures/basic.jsrs
+---
+export function add(a, b) {
+	a + b;
+}
+export function match_test(x) {
+	_match1: {
+		const _m0 = a;
+		if (_m = matches(_m0, 0)) {
+			let [_m0, _m1] = _m0;
+			if (_m = matches(_m0, 1)) {
+				let [_m0] = _m0;
+				var x = _m0;
+				if (_m = matches(_m1, 2)) {
+					let [_m0] = _m1;
+					var y = _m0;
+					return x + y;
+					break _match1;
+				}
+			}
+		}
+		{
+			return 0;
+		}
+	}
+}
