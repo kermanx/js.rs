@@ -1,0 +1,14 @@
+{
+  "name": "@jsrs/parser",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-rust": "^0.23.2"
+  }
+}

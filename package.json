@@ -1,0 +1,14 @@
+{
+  "name": "@jsrs/monorepo",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "prettier": "^3.5.1",
+    "vitest": "^3.0.5"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

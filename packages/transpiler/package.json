@@ -1,0 +1,13 @@
+{
+  "name": "@jsrs/transpiler",
+  "type": "module",
+  "dependencies": {
+    "@jsrs/parser": "workspace:*"
+  },
+  "scripts": {
+    "test": "vitest"
+  },
+  "vitest": {
+    "include": ["test/**/*.test.ts"]
+  }
+}
