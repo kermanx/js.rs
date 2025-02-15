@@ -51,16 +51,16 @@ export function main() {
 export function is_alpha(c) {
   _m0 = c;
   if (_m0 === "x") {
-    _r = (() => {
+    _mr = (() => {
       {
         console.log('"x"');
         return true;
       }
     })();
   } else if ((_m0 >= "a" && _m0 <= "z") || (_m0 >= "A" && _m0 <= "Z")) {
-    _r = true;
+    _mr = true;
   } else {
-    _r = false;
+    _mr = false;
   }
 }
-var _r, _m0, _m1, _m2;
+var _mr, _m0, _m1, _m2;

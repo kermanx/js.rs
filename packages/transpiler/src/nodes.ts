@@ -8,7 +8,7 @@ export class Printer {
     for (const item of file.children) {
       yield* this.printItem(item);
     }
-    yield "var _r";
+    yield "var _mr";
     for (let i = 0; i < this.maxMatchDepth; i++) {
       yield ",";
       yield `_m${i}`;
@@ -432,7 +432,7 @@ export class Printer {
       }
 
       const value = arm.childForFieldName("value")!;
-      yield "_r = ";
+      yield "_mr = ";
       yield* this.printExpr(value);
 
       yield "}";
