@@ -3,19 +3,22 @@ export function add(a, b) {
   return a + b;
 }
 export function Option() {}
-export function match_test(x) {
+Option.Some = _h.variant(/*Some*/ 0);
+Option.None = _h.unitVariant(/*None*/ 1);
+
+export function match_test(a) {
   _m0 = a;
   if (
-    (_m1 = _h.matches(_m0, /*A*/ 0)) &&
-    (_m2 = _h.matches(_m1[1], /*B*/ 1)) &&
+    (_m1 = _h.matches(_m0, /*A*/ 2)) &&
+    (_m2 = _h.matches(_m1[1], /*B*/ 3)) &&
     (x = _m2[1]) &&
-    (_m2 = _h.matches(_m1[2], /*C*/ 2)) &&
+    (_m2 = _h.matches(_m1[2], /*C*/ 4)) &&
     (y = _m2[1])
   ) {
     var x, y;
-    return x + y;
+    return Option.Some(x + y);
   } else {
-    return 0;
+    return Option.None;
   }
 }
 export function A() {}

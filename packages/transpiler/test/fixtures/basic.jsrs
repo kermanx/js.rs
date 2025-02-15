@@ -7,9 +7,9 @@ pub enum Option<T> {
   None,
 }
 
-pub fn match_test(x: Option<Option<i32>>) -> i32 {
-  let A(B(x), C(y)) = a else { return 0; };
-  return x + y;
+pub fn match_test(a: Option<Option<i32>>) -> Option<i32> {
+  let A(B(x), C(y)) = a else { return Option::None; };
+  return Option::Some(x + y);
 }
 
 pub struct A {

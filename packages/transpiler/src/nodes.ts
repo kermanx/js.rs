@@ -8,10 +8,10 @@ export class Printer {
     for (const item of file.children) {
       yield* this.printItem(item);
     }
-    yield "var "
+    yield "var ";
     for (let i = 0; i < this.maxMatchDepth; i++) {
       if (i > 0) {
-        yield ','
+        yield ",";
       }
       yield `_m${i}`;
     }
@@ -207,6 +207,9 @@ export class Printer {
       case "reference_expression":
         yield* this.printReference(expr);
         break;
+      case "scoped_identifier":
+        yield* this.printScopedIdent(expr);
+        break;
       default:
         throw new Error("Not implemented: " + expr.type);
     }
@@ -300,8 +303,27 @@ export class Printer {
       yield "export ";
     }
     yield "function ";
-    yield* this.printIdent(enm.childForFieldName("name")!);
-    yield "() {}";
+    const name = enm.childForFieldName("name")!;
+    yield* this.printIdent(name);
+    yield "() {}\n";
+
+    const body = enm.childForFieldName("body")!;
+    for (const variant of body.namedChildren) {
+      yield* this.printIdent(name);
+      yield ".";
+
+      const variantName = variant.childForFieldName("name")!;
+      yield* this.printIdent(variantName);
+
+      yield " = ";
+
+      const body = variant.childForFieldName("body");
+      yield body ? "_h.variant(" : "_h.unitVariant(";
+      yield this.getDiscriminantId(variantName.text);
+      yield ")";
+
+      yield ";\n";
+    }
   }
 
   *printItemStruct(struct: SyntaxNode): Code {
@@ -361,6 +383,17 @@ export class Printer {
       yield "_h.ref(() => (";
       yield* this.printExpr(value);
       yield "))";
+    }
+  }
+
+  *printScopedIdent(ident: SyntaxNode): Code {
+    let first = true;
+    for (const child of ident.namedChildren) {
+      if (!first) {
+        yield ".";
+      }
+      first = false;
+      yield* this.printIdent(child);
     }
   }
 }
