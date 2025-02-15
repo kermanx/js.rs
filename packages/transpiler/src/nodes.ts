@@ -4,6 +4,7 @@ import { Code, Context } from "./context";
 export declare interface Printer extends Context {}
 export class Printer {
   *printFile(file: SyntaxNode): Code {
+    yield "import * as _h from \"@jsrs/helpers\";\n";
     for (const item of file.children) {
       yield* this.printItem(item);
     }
@@ -257,7 +258,7 @@ export class Printer {
 
   *printItemImpl(impl: SyntaxNode): Code {
     const type = impl.childForFieldName("type")!;
-    yield "impl(";
+    yield "_h.impl(";
     yield* this.printTypeIdent(type);
     yield ",{\n";
 
@@ -344,13 +345,13 @@ export class Printer {
     const value = ref.childForFieldName("value")!;
 
     if (isMut) {
-      yield "refMut(() => (";
+      yield "_h.refMut(() => (";
       yield* this.printExpr(value);
       yield "), v => (";
       yield* this.printExpr(value);
       yield ") = v)";
     } else {
-      yield "ref(() => (";
+      yield "_h.ref(() => (";
       yield* this.printExpr(value);
       yield "))";
     }

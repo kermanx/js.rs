@@ -1,3 +1,4 @@
+import * as _h from "@jsrs/helpers";
 function add(a, b) {
   return a + b;
 }
@@ -6,9 +7,9 @@ function match_test(x) {
   _m0 = a;
   if (
     (_m1 =
-      matches(_m0, /*A*/ 0) &&
-      (_m2 = matches(_m1[1], /*B*/ 1) && (x = _m2[1])) &&
-      (_m2 = matches(_m1[2], /*C*/ 2) && (y = _m2[1])))
+      _h.matches(_m0, /*A*/ 0) &&
+      (_m2 = _h.matches(_m1[1], /*B*/ 1) && (x = _m2[1])) &&
+      (_m2 = _h.matches(_m1[2], /*C*/ 2) && (y = _m2[1])))
   ) {
     var x, y;
     return x + y;
@@ -17,7 +18,7 @@ function match_test(x) {
   }
 }
 class A {}
-impl(A, {
+_h.impl(A, {
   new(a, b) {
     return { a, b };
   },
@@ -34,11 +35,11 @@ function main() {
   var a = 1;
   var b = 2;
   swap(
-    refMut(
+    _h.refMut(
       () => a,
       (v) => (a = v),
     ),
-    refMut(
+    _h.refMut(
       () => b,
       (v) => (b = v),
     ),
