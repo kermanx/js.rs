@@ -2,7 +2,7 @@ import * as _h from "@jsrs/helpers";
 export function add(a, b) {
   return a + b;
 }
-export class Option {}
+export function Option() {}
 export function match_test(x) {
   _m0 = a;
   if (
@@ -18,15 +18,15 @@ export function match_test(x) {
     return 0;
   }
 }
-export class A {}
-_h.impl(A, {
-  new(a, b) {
-    return { a, b };
-  },
-  add() {
-    return this["a"] + this["b"];
-  },
-});
+
+export function A() {}
+A.new = function (a, b) {
+  return { a, b };
+};
+A.prototype.add = function () {
+  return this["a"] + this["b"];
+};
+
 function swap(a, b) {
   var tmp = a.v;
   a.v = b.v;

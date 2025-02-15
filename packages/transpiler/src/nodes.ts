@@ -4,7 +4,7 @@ import { Code, Context } from "./context";
 export declare interface Printer extends Context {}
 export class Printer {
   *printFile(file: SyntaxNode): Code {
-    yield "import * as _h from \"@jsrs/helpers\";\n";
+    yield 'import * as _h from "@jsrs/helpers";\n';
     for (const item of file.children) {
       yield* this.printItem(item);
     }
@@ -33,22 +33,15 @@ export class Printer {
   }
 
   *printItemFn(fn: SyntaxNode, isDeclaration = true): Code {
-    if (isDeclaration) {
-      if (fn.namedChildren[0]?.type === 'visibility_modifier') {
-        yield "export ";
-      }
-
-      yield "function ";
+    if (isDeclaration && fn.namedChildren[0]?.type === "visibility_modifier") {
+      yield "export ";
     }
+
+    yield "function ";
 
     const name = fn.childForFieldName("name")!;
-
-    if (!isDeclaration) {
-      yield `"`;
-    }
-    yield* this.printIdent(name);
-    if (!isDeclaration) {
-      yield `"`;
+    if (isDeclaration) {
+      yield* this.printIdent(name);
     }
 
     yield "(";
@@ -251,20 +244,27 @@ export class Printer {
 
   *printItemImpl(impl: SyntaxNode): Code {
     const type = impl.childForFieldName("type")!;
-    yield "_h.impl(";
-    yield* this.printTypeIdent(type);
-    yield ",{\n";
-
     const body = impl.childForFieldName("body")!;
-    yield* this.printDeclarationList(body);
+    for (const decl of body.namedChildren) {
+      yield* this.printTypeIdent(type);
 
-    yield "})";
-  }
+      const isStatic =
+        decl.childForFieldName("parameters")!.namedChildren[0]?.type !==
+        "self_parameter";
+      if (!isStatic) {
+        yield ".prototype";
+      }
 
-  *printDeclarationList(decls: SyntaxNode): Code {
-    for (const decl of decls.namedChildren) {
+      yield ".";
+
+      const name = decl.childForFieldName("name")!;
+      yield* this.printIdent(name);
+
+      yield " = ";
+
       yield* this.printItemFn(decl, false);
-      yield ",\n";
+
+      yield "\n";
     }
   }
 
@@ -288,21 +288,21 @@ export class Printer {
   }
 
   *printItemEnum(enm: SyntaxNode): Code {
-    if (enm.namedChildren[0]?.type === 'visibility_modifier') {
+    if (enm.namedChildren[0]?.type === "visibility_modifier") {
       yield "export ";
     }
-    yield "class ";
+    yield "function ";
     yield* this.printIdent(enm.childForFieldName("name")!);
-    yield " {}";
+    yield "() {}";
   }
 
   *printItemStruct(struct: SyntaxNode): Code {
-    if (struct.namedChildren[0]?.type === 'visibility_modifier') {
+    if (struct.namedChildren[0]?.type === "visibility_modifier") {
       yield "export ";
     }
-    yield "class ";
+    yield "function ";
     yield* this.printIdent(struct.childForFieldName("name")!);
-    yield " {}";
+    yield "() {}";
   }
 
   *printUnary(unary: SyntaxNode): Code {
