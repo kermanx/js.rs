@@ -34,9 +34,8 @@ export class Printer {
 
   *printItemFn(fn: SyntaxNode, isDeclaration = true): Code {
     if (isDeclaration) {
-      const vis = fn.childForFieldName("visibility_modifier");
-      if (vis) {
-        yield* this.printVisibility(vis);
+      if (fn.namedChildren[0]?.type === 'visibility_modifier') {
+        yield "export ";
       }
 
       yield "function ";
@@ -65,12 +64,6 @@ export class Printer {
 
     const body = fn.childForFieldName("body")!;
     yield* this.printBlock(body);
-  }
-
-  *printVisibility(vis: SyntaxNode): Code {
-    if (vis.type === "public" || vis.type === "restricted") {
-      yield "export ";
-    }
   }
 
   *printPatType(pat: SyntaxNode): Code {
@@ -295,12 +288,18 @@ export class Printer {
   }
 
   *printItemEnum(enm: SyntaxNode): Code {
+    if (enm.namedChildren[0]?.type === 'visibility_modifier') {
+      yield "export ";
+    }
     yield "class ";
     yield* this.printIdent(enm.childForFieldName("name")!);
     yield " {}";
   }
 
   *printItemStruct(struct: SyntaxNode): Code {
+    if (struct.namedChildren[0]?.type === 'visibility_modifier') {
+      yield "export ";
+    }
     yield "class ";
     yield* this.printIdent(struct.childForFieldName("name")!);
     yield " {}";

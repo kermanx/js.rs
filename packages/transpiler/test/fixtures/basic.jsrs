@@ -2,7 +2,7 @@ pub fn add(a: i32, b: i32) -> i32 {
   a + b
 }
 
-enum Option<T> {
+pub enum Option<T> {
   Some(T),
   None,
 }
@@ -12,7 +12,7 @@ pub fn match_test(x: Option<Option<i32>>) -> i32 {
   return x + y;
 }
 
-struct A {
+pub struct A {
   a: i32,
   b: i32,
 }
@@ -33,7 +33,7 @@ fn swap(a: &mut i32, b: &mut i32) {
   *b = tmp;
 }
 
-fn main() {
+pub fn main() {
   let mut a = 1;
   let mut b = 2;
   swap(&mut a, &mut b);

@@ -1,9 +1,9 @@
 import * as _h from "@jsrs/helpers";
-function add(a, b) {
+export function add(a, b) {
   return a + b;
 }
-class Option {}
-function match_test(x) {
+export class Option {}
+export function match_test(x) {
   _m0 = a;
   if (
     (_m1 =
@@ -17,7 +17,7 @@ function match_test(x) {
     return 0;
   }
 }
-class A {}
+export class A {}
 _h.impl(A, {
   new(a, b) {
     return { a, b };
@@ -31,7 +31,7 @@ function swap(a, b) {
   a.v = b.v;
   b.v = tmp;
 }
-function main() {
+export function main() {
   var a = 1;
   var b = 2;
   swap(
