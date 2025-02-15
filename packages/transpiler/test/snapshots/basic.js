@@ -1,7 +1,7 @@
 function add(a, b) {
-  a + b;
+  return a + b;
 }
-
+class Option {}
 function match_test(x) {
   _m0 = a;
   if (
@@ -16,3 +16,12 @@ function match_test(x) {
     return 0;
   }
 }
+class A {}
+impl(A, {
+  new(a, b) {
+    return { a, b };
+  },
+  add() {
+    return this["a"] + this["b"];
+  },
+});

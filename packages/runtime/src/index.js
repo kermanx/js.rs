@@ -1,7 +1,8 @@
 const discriminantKey = Symbol("Discriminant");
 
-export function enumMember(discriminant, data) {
+export function enumMember(ctor, discriminant, data) {
   return {
+    __proto__: ctor.prototype,
     [discriminantKey]: discriminant,
     data,
   };

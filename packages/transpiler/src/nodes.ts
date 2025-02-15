@@ -15,7 +15,15 @@ export class Printer {
         yield* this.printItemFn(item);
         break;
       case "enum_item":
-        // Do nothing for now
+        yield* this.printItemEnum(item);
+        break;
+      case "struct_item":
+        yield* this.printItemStruct(item);
+        break;
+      case "impl_item":
+        yield* this.printItemImpl(item);
+        break;
+      case "line_comment":
         break;
       default:
         throw new Error("Not implemented: " + item.type);
@@ -23,21 +31,31 @@ export class Printer {
     yield "\n";
   }
 
-  *printItemFn(fn: SyntaxNode): Code {
-    const vis = fn.childForFieldName("visibility_modifier");
-    if (vis) {
-      yield* this.printVisibility(vis);
+  *printItemFn(fn: SyntaxNode, isDeclaration = true): Code {
+    if (isDeclaration) {
+      const vis = fn.childForFieldName("visibility_modifier");
+      if (vis) {
+        yield* this.printVisibility(vis);
+      }
+
+      yield "function ";
     }
 
-    yield "function ";
-
     const name = fn.childForFieldName("name")!;
+
+    if (!isDeclaration) {
+      yield `"`;
+    }
     yield* this.printIdent(name);
+    if (!isDeclaration) {
+      yield `"`;
+    }
 
     yield "(";
 
     const parameters = fn.childForFieldName("parameters")!;
     for (const param of parameters.namedChildren) {
+      if (param.type === "self_parameter") continue;
       yield* this.printPatType(param.childForFieldName("pattern")!);
       yield ",";
     }
@@ -105,11 +123,21 @@ export class Printer {
 
   *printStmt(stmt: SyntaxNode): Code {
     switch (stmt.type) {
-      case "local":
+      case "expression_statement":
+        yield* this.printExpr(stmt.namedChildren[0]);
+        break;
+      case "let_declaration":
         yield* this.printLocal(stmt);
         break;
       default:
-        yield* this.printExpr(stmt);
+        if (stmt.type.endsWith("_expression")) {
+          if (stmt.type !== "return_expression") {
+            yield "return ";
+          }
+          yield* this.printExpr(stmt);
+        } else {
+          throw new Error("Not implemented: " + stmt.type);
+        }
     }
     yield ";\n";
   }
@@ -162,11 +190,14 @@ export class Printer {
       case "return_expression":
         yield* this.printReturn(expr);
         break;
-      case "expression_statement":
-        yield* this.printExprBlock(expr);
+      case "struct_expression":
+        yield* this.printStruct(expr);
         break;
-      case "let_declaration":
-        yield* this.printLocal(expr);
+      case "field_expression":
+        yield* this.printFieldExpr(expr);
+        break;
+      case "self":
+        yield "this";
         break;
       default:
         throw new Error("Not implemented: " + expr.type);
@@ -196,5 +227,69 @@ export class Printer {
     yield "(() => {";
     yield* this.printBlock(block);
     yield "})()";
+  }
+
+  *printFieldExpr(expr: SyntaxNode): Code {
+    const value = expr.childForFieldName("value")!;
+    const field = expr.childForFieldName("field")!;
+
+    yield "(";
+    yield* this.printExpr(value);
+    yield `)["${field.text}"]`;
+  }
+
+  *printTypeIdent(ident: SyntaxNode): Code {
+    yield* this.printIdent(ident);
+  }
+
+  *printItemImpl(impl: SyntaxNode): Code {
+    const type = impl.childForFieldName("type")!;
+    yield "impl(";
+    yield* this.printTypeIdent(type);
+    yield ",{\n";
+
+    const body = impl.childForFieldName("body")!;
+    yield* this.printDeclarationList(body);
+
+    yield "})";
+  }
+
+  *printDeclarationList(decls: SyntaxNode): Code {
+    for (const decl of decls.namedChildren) {
+      yield* this.printItemFn(decl, false);
+      yield ",\n";
+    }
+  }
+
+  *printStruct(struct: SyntaxNode): Code {
+    yield "({";
+    for (const field of struct.childForFieldName("body")!.namedChildren) {
+      switch (field.type) {
+        case "shorthand_field_initializer":
+          yield `${field.text},`;
+          break;
+        case "field_initializer":
+          yield `["${field.childForFieldName("field")!.text}"]:`;
+          yield* this.printExpr(field.childForFieldName("value")!);
+          yield ",";
+          break;
+        default:
+          throw new Error("Not implemented: " + field.type);
+      }
+    }
+    yield "})";
+  }
+
+  *printItemEnum(enm: SyntaxNode): Code {
+    yield "class ";
+    yield* this.printIdent(enm.childForFieldName("name")!);
+    yield " {}";
+  }
+
+  
+  *printItemStruct(struct: SyntaxNode): Code {
+    yield "class ";
+    yield* this.printIdent(struct.childForFieldName("name")!);
+    yield " {}";
   }
 }
