@@ -26,7 +26,7 @@ A.new = function (a, b) {
   return { a, b };
 };
 A.prototype.add = function () {
-  return this["a"] + this["b"];
+  return this.a + this.b;
 };
 
 function swap(a, b) {
@@ -48,4 +48,19 @@ export function main() {
     ),
   );
 }
-var _m0, _m1, _m2;
+export function is_alpha(c) {
+  _m0 = c;
+  if (_m0 === "x") {
+    _r = (() => {
+      {
+        console.log('"x"');
+        return true;
+      }
+    })();
+  } else if ((_m0 >= "a" && _m0 <= "z") || (_m0 >= "A" && _m0 <= "Z")) {
+    _r = true;
+  } else {
+    _r = false;
+  }
+}
+var _r, _m0, _m1, _m2;

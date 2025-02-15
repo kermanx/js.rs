@@ -12,6 +12,17 @@ export class MatcherPrinter {
       case "tuple_struct_pattern":
         yield* this.printPatTupleStructMatcher(pat, target);
         break;
+      case "char_literal":
+        yield `(${target} === ${pat.text})`;
+        break;
+      case "or_pattern":
+        yield* this.printPatMatcher(pat.namedChildren[0], target);
+        yield "||";
+        yield* this.printPatMatcher(pat.namedChildren[1], target);
+        break;
+      case "range_pattern":
+        yield* this.printRangePatternMatcher(pat, target);
+        break;
       default:
         throw new Error("Not implemented: " + pat.type);
     }
@@ -33,5 +44,10 @@ export class MatcherPrinter {
   *printPatIdentMatcher(pat: SyntaxNode, target: string): Code {
     this.matchIdentifiers!.push(pat.text);
     yield `(${pat.text} = ${target})`;
+  }
+
+  *printRangePatternMatcher(pat: SyntaxNode, target: string): Code {
+    const [start, end] = pat.namedChildren;
+    yield `(${target} >= ${start.text} && ${target} <= ${end.text})`;
   }
 }

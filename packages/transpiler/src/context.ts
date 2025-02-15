@@ -6,7 +6,7 @@ export type Code = Generator<string, void, void>;
 export class Context {
   discriminants = new Map<string, number>();
   blockPostCbs: Array<Array<(this: this) => Code>> = [[]];
-  matchIdentifiers: string[] | null = null;
+  matchIdentifiers: string[] = [];
   _matchDepth = 0;
   maxMatchDepth = 0;
 

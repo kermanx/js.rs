@@ -8,11 +8,9 @@ export class Printer {
     for (const item of file.children) {
       yield* this.printItem(item);
     }
-    yield "var ";
+    yield "var _r";
     for (let i = 0; i < this.maxMatchDepth; i++) {
-      if (i > 0) {
-        yield ",";
-      }
+      yield ",";
       yield `_m${i}`;
     }
     yield ";\n";
@@ -125,7 +123,10 @@ export class Printer {
         yield* this.printLocal(stmt);
         break;
       default:
-        if (stmt.type.endsWith("_expression")) {
+        if (
+          stmt.type.endsWith("_expression") ||
+          stmt.type.endsWith("_literal")
+        ) {
           if (stmt.type !== "return_expression") {
             yield "return ";
           }
@@ -178,7 +179,11 @@ export class Printer {
         yield* this.printIdent(expr);
         break;
       case "integer_literal":
+      case "boolean_literal":
         yield expr.text;
+        break;
+      case "string_literal":
+        yield JSON.stringify(expr.text);
         break;
       case "binary_expression":
         yield* this.printBinary(expr);
@@ -209,6 +214,12 @@ export class Printer {
         break;
       case "scoped_identifier":
         yield* this.printScopedIdent(expr);
+        break;
+      case "match_expression":
+        yield* this.printMatch(expr);
+        break;
+      case "block":
+        yield* this.printExprBlock(expr);
         break;
       default:
         throw new Error("Not implemented: " + expr.type);
@@ -246,7 +257,7 @@ export class Printer {
 
     yield "(";
     yield* this.printExpr(value);
-    yield `)["${field.text}"]`;
+    yield `).${field.text}`;
   }
 
   *printTypeIdent(ident: SyntaxNode): Code {
@@ -395,5 +406,42 @@ export class Printer {
       first = false;
       yield* this.printIdent(child);
     }
+  }
+
+  *printMatch(match: SyntaxNode): Code {
+    const value = match.childForFieldName("value")!;
+    yield "_m0 = ";
+    yield* this.printExpr(value);
+    yield ";\n";
+
+    const body = match.childForFieldName("body")!;
+    let isFirst = true;
+    for (const arm of body.namedChildren) {
+      const pattern = arm.childForFieldName("pattern")!.namedChildren[0];
+
+      if (pattern) {
+        yield isFirst ? "if (" : "else if (";
+        isFirst = false;
+
+        this.matchDepth = 0;
+        this.matchIdentifiers = [];
+        yield* this.as_matcher_printer().printPatMatcher(pattern, "_m0");
+        yield ") {\n";
+      } else {
+        yield "else {\n";
+      }
+
+      const value = arm.childForFieldName("value")!;
+      yield "_r = ";
+      yield* this.printExpr(value);
+
+      yield "}";
+    }
+
+    if (this.matchIdentifiers.length > 0) {
+      yield `var ${this.matchIdentifiers.join(",")};\n`;
+    }
+
+    // TODO: _r
   }
 }
