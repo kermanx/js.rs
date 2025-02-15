@@ -20,7 +20,7 @@ export class MatcherPrinter {
 
   *printPatTupleStructMatcher(pat: SyntaxNode, target: string): Code {
     const discriminant = this.getDiscriminantId(pat.namedChildren[0].text);
-    yield `(_m${this.matchDepth} = _h.matches(${target}, ${discriminant})`;
+    yield `((_m${this.matchDepth} = _h.matches(${target}, ${discriminant}))`;
 
     for (let i = 1; i < pat.namedChildren.length; i++) {
       yield `&&`;
