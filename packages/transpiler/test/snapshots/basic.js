@@ -18,7 +18,6 @@ export function match_test(x) {
     return 0;
   }
 }
-
 export function A() {}
 A.new = function (a, b) {
   return { a, b };
@@ -46,3 +45,4 @@ export function main() {
     ),
   );
 }
+var _m0, _m1, _m2;

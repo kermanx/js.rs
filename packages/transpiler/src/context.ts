@@ -7,7 +7,16 @@ export class Context {
   discriminants = new Map<string, number>();
   blockPostCbs: Array<Array<(this: this) => Code>> = [[]];
   matchIdentifiers: string[] | null = null;
-  matchDepth = 0;
+  _matchDepth = 0;
+  maxMatchDepth = 0;
+
+  get matchDepth() {
+    return this._matchDepth;
+  }
+  set matchDepth(value: number) {
+    this._matchDepth = value;
+    this.maxMatchDepth = Math.max(this.maxMatchDepth, value);
+  }
 
   getDiscriminantId(name: string): string {
     let id = this.discriminants.get(name);

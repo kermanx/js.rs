@@ -8,6 +8,14 @@ export class Printer {
     for (const item of file.children) {
       yield* this.printItem(item);
     }
+    yield "var "
+    for (let i = 0; i < this.maxMatchDepth; i++) {
+      if (i > 0) {
+        yield ','
+      }
+      yield `_m${i}`;
+    }
+    yield ";\n";
   }
 
   *printItem(item: SyntaxNode): Code {
