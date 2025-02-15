@@ -4,7 +4,7 @@ import { Code, Context } from "./context";
 export declare interface Printer extends Context {}
 export class Printer {
   *printFile(file: SyntaxNode): Code {
-    yield 'import * as _h from "@jsrs/helpers";\n';
+    yield 'import * as _r from "@jsrs/runtime";\n';
     for (const item of file.children) {
       yield* this.printItem(item);
     }
@@ -318,7 +318,7 @@ export class Printer {
       yield " = ";
 
       const body = variant.childForFieldName("body");
-      yield body ? "_h.variant(" : "_h.unitVariant(";
+      yield body ? "_r.variant(" : "_r.unitVariant(";
       yield this.getDiscriminantId(variantName.text);
       yield ")";
 
@@ -374,13 +374,13 @@ export class Printer {
     const value = ref.childForFieldName("value")!;
 
     if (isMut) {
-      yield "_h.refMut(() => (";
+      yield "_r.refMut(() => (";
       yield* this.printExpr(value);
       yield "), v => (";
       yield* this.printExpr(value);
       yield ") = v)";
     } else {
-      yield "_h.ref(() => (";
+      yield "_r.ref(() => (";
       yield* this.printExpr(value);
       yield "))";
     }
