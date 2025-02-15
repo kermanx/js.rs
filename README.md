@@ -18,3 +18,10 @@ JavaScript in Rust Syntax (<del>= Rust with GC</del> 😂)
 - **Transpiler**: Rust -> JavaScript
 - **IDE Support**: Type hint&completion powered by [Volar.js](https://volarjs.dev/)
 - **Runtime**: Some helpers for runtime
+
+### Designs
+
+- Traits are abstract classes
+- Structs are classes
+- Enums are discriminate + data
+- Lifetime annotations are discarded

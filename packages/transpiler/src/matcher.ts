@@ -3,7 +3,8 @@ import { Context } from "./context";
 
 export declare interface MatcherPrinter extends Context {}
 export class MatcherPrinter {
-  printPatMatcher(pat: SyntaxNode, target: number) {
+  printPatMatcher(pat: SyntaxNode, target: string) {
+    this.matchDepth++;
     switch (pat.type) {
       case "identifier":
         this.printPatIdentMatcher(pat, target);
@@ -14,30 +15,23 @@ export class MatcherPrinter {
       default:
         throw new Error("Not implemented: " + pat.type);
     }
+    this.matchDepth--;
   }
 
-  printPatTupleStructMatcher(pat: SyntaxNode, target: number) {
-    this.push(`if (_m = matches(_m${target}, `);
+  printPatTupleStructMatcher(pat: SyntaxNode, target: string) {
     const discriminant = this.getDiscriminantId(pat.namedChildren[0].text);
-    this.push(String(discriminant));
-    this.push(")) {\n");
-
-    this.push("let [");
-    for (let i = 1; i < pat.namedChildren.length; i++) {
-      this.push(`_m${i},`);
-    }
-    this.push(`] = _m${target};\n`);
+    this.push(`(_m${this.matchDepth} = matches(${target}, ${discriminant})`);
 
     for (let i = 1; i < pat.namedChildren.length; i++) {
-      this.printPatMatcher(pat.namedChildren[i], i);
+      this.push(`&&`);
+      this.printPatMatcher(pat.namedChildren[i], `_m${this.matchDepth}[${i}]`);
     }
 
-    this.matcherQuotes++;
+    this.push(")");
   }
 
-  printPatIdentMatcher(pat: SyntaxNode, target: number) {
-    this.push("var ");
-    this.push(pat.text);
-    this.push(` = _m${target};\n`);
+  printPatIdentMatcher(pat: SyntaxNode, target: string) {
+    this.matchIdentifiers!.push(pat.text);
+    this.push(`(${pat.text} = ${target})`);
   }
 }

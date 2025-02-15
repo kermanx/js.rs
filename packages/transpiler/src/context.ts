@@ -4,9 +4,9 @@ import { Printer } from "./nodes";
 export class Context {
   result: string[] = [];
   discriminants = new Map<string, number>();
-  matcherQuotes = 0;
-  labelId = 0;
   blockPostCbs: Array<Array<() => void>> = [[]];
+  matchIdentifiers: string[] | null = null;
+  matchDepth = 0;
 
   push(token: string | number) {
     if (typeof token === "number") {
@@ -18,20 +18,13 @@ export class Context {
     this.result.push(token);
   }
 
-  getDiscriminantId(name: string): number {
-    const id = this.discriminants.size;
-    if (!this.discriminants.has(name)) {
+  getDiscriminantId(name: string): string {
+    let id = this.discriminants.get(name);
+    if (!id) {
+      id = this.discriminants.size;
       this.discriminants.set(name, id);
     }
-    return this.discriminants.get(name)!;
-  }
-
-  allocLabel(): number {
-    return ++this.labelId;
-  }
-
-  freeLabel() {
-    this.labelId--;
+    return `/*${name}*/ ${id}`;
   }
 
   blockPost(callback: () => void) {

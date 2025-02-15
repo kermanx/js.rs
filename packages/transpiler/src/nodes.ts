@@ -116,36 +116,24 @@ export class Printer {
     const alternative = local.childForFieldName("alternative");
     if (alternative) {
       const value = local.childForFieldName("value")!;
-
-      this.push("_match");
-      const labelId = this.allocLabel();
-      this.push(labelId);
-      this.push(": {\n");
-
-      this.push("const _m0 = ");
+      this.push("_m0 = ");
       this.printExpr(value);
       this.push(";\n");
-      this.matcherQuotes = 0;
+      this.push("if (");
+      this.matchIdentifiers = [];
+      this.matchDepth = 0;
       this.as_matcher_printer().printPatMatcher(
         local.childForFieldName("pattern")!,
-        0
+        "_m0"
       );
-      const quotes = this.matcherQuotes;
+      this.push(") {\n");
+      if (this.matchIdentifiers.length > 0) {
+        this.push(`var ${this.matchIdentifiers.join(",")};\n`);
+      }
 
       this.blockPost(() => {
-        this.push("break _match");
-        this.push(labelId);
-        this.push(";\n");
-
-        for (let i = 0; i < quotes; i++) {
-          this.push("}");
-        }
-
+        this.push("} else");
         this.printBlock(alternative.namedChildren[0]);
-
-        this.push("}");
-
-        this.freeLabel();
       });
     } else {
       this.push("var ");

@@ -3,23 +3,16 @@ function add(a, b) {
 }
 
 function match_test(x) {
-  _match1: {
-    const _m0 = a;
-    if ((_m = matches(_m0, 0))) {
-      let [_m1, _m2] = _m0;
-      if ((_m = matches(_m1, 1))) {
-        let [_m1] = _m1;
-        var x = _m1;
-        if ((_m = matches(_m2, 2))) {
-          let [_m1] = _m2;
-          var y = _m1;
-          return x + y;
-          break _match1;
-        }
-      }
-    }
-    {
-      return 0;
-    }
+  _m0 = a;
+  if (
+    (_m1 =
+      matches(_m0, /*A*/ 0) &&
+      (_m2 = matches(_m1[1], /*B*/ 1) && (x = _m2[1])) &&
+      (_m2 = matches(_m1[2], /*C*/ 2) && (y = _m2[1])))
+  ) {
+    var x, y;
+    return x + y;
+  } else {
+    return 0;
   }
 }
