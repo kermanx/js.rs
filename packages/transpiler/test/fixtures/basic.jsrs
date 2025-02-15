@@ -26,3 +26,15 @@ impl A {
     self.a + self.b
   }
 }
+
+fn swap(a: &mut i32, b: &mut i32) {
+  let tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+fn main() {
+  let mut a = 1;
+  let mut b = 2;
+  swap(&mut a, &mut b);
+}

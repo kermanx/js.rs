@@ -13,15 +13,18 @@ export function matches(value, discriminant) {
 }
 
 export function impl(target, members) {
-
+  Object.assign(target.prototype, members);
 }
 
-export function ref(value) {
-  return {
-    value,
-  };
+export function ref(g) {
+  return Object.defineProperty({}, 'v', {
+    get: g
+  });
 }
 
-export function deref(ref) {
-  return ref.value;
+export function refMut(g, s) {
+  return Object.defineProperty({}, 'v', {
+    get: g,
+    set: s
+  });
 }

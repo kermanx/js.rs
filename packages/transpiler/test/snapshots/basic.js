@@ -25,3 +25,22 @@ impl(A, {
     return this["a"] + this["b"];
   },
 });
+function swap(a, b) {
+  var tmp = a.v;
+  a.v = b.v;
+  b.v = tmp;
+}
+function main() {
+  var a = 1;
+  var b = 2;
+  swap(
+    refMut(
+      () => a,
+      (v) => (a = v),
+    ),
+    refMut(
+      () => b,
+      (v) => (b = v),
+    ),
+  );
+}

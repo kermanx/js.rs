@@ -170,6 +170,7 @@ export class Printer {
       yield* this.printPat(local.childForFieldName("pattern")!);
       const value = local.childForFieldName("value");
       if (value) {
+        yield " = ";
         yield* this.printExpr(value);
       }
       yield ";";
@@ -187,6 +188,9 @@ export class Printer {
       case "binary_expression":
         yield* this.printBinary(expr);
         break;
+      case "unary_expression":
+        yield* this.printUnary(expr);
+        break;
       case "return_expression":
         yield* this.printReturn(expr);
         break;
@@ -198,6 +202,15 @@ export class Printer {
         break;
       case "self":
         yield "this";
+        break;
+      case "assignment_expression":
+        yield* this.printAssignment(expr);
+        break;
+      case "call_expression":
+        yield* this.printCall(expr);
+        break;
+      case "reference_expression":
+        yield* this.printReference(expr);
         break;
       default:
         throw new Error("Not implemented: " + expr.type);
@@ -286,10 +299,60 @@ export class Printer {
     yield " {}";
   }
 
-  
   *printItemStruct(struct: SyntaxNode): Code {
     yield "class ";
     yield* this.printIdent(struct.childForFieldName("name")!);
     yield " {}";
+  }
+
+  *printUnary(unary: SyntaxNode): Code {
+    const op = unary.children[0].type;
+    if (op === "*") {
+      yield "(";
+      yield* this.printExpr(unary.children[1]);
+      yield ").v";
+    } else {
+      throw new Error("Not implemented: " + op);
+    }
+  }
+
+  *printAssignment(assignment: SyntaxNode): Code {
+    const left = assignment.childForFieldName("left")!;
+    const right = assignment.childForFieldName("right")!;
+    yield "(";
+    yield* this.printExpr(left);
+    yield " = ";
+    yield* this.printExpr(right);
+    yield ")";
+  }
+
+  *printCall(call: SyntaxNode): Code {
+    const fn = call.childForFieldName("function")!;
+    yield "(";
+    yield* this.printExpr(fn);
+    yield ")(";
+    const args = call.childForFieldName("arguments")!;
+    for (const arg of args.namedChildren) {
+      yield* this.printExpr(arg);
+      yield ",";
+    }
+    yield ")";
+  }
+
+  *printReference(ref: SyntaxNode): Code {
+    const isMut = ref.childCount === 3;
+    const value = ref.childForFieldName("value")!;
+
+    if (isMut) {
+      yield "refMut(() => (";
+      yield* this.printExpr(value);
+      yield "), v => (";
+      yield* this.printExpr(value);
+      yield ") = v)";
+    } else {
+      yield "ref(() => (";
+      yield* this.printExpr(value);
+      yield "))";
+    }
   }
 }
