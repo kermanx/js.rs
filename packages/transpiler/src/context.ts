@@ -1,22 +1,13 @@
 import { MatcherPrinter } from "./matcher";
 import { Printer } from "./nodes";
 
+export type Code = Generator<string, void, void>;
+
 export class Context {
-  result: string[] = [];
   discriminants = new Map<string, number>();
-  blockPostCbs: Array<Array<() => void>> = [[]];
+  blockPostCbs: Array<Array<(this: this) => Code>> = [[]];
   matchIdentifiers: string[] | null = null;
   matchDepth = 0;
-
-  push(token: string | number) {
-    if (typeof token === "number") {
-      token = token.toString();
-    }
-    if (typeof token !== "string") {
-      throw new Error("Expected string, got " + token);
-    }
-    this.result.push(token);
-  }
 
   getDiscriminantId(name: string): string {
     let id = this.discriminants.get(name);
@@ -27,12 +18,8 @@ export class Context {
     return `/*${name}*/ ${id}`;
   }
 
-  blockPost(callback: () => void) {
+  blockPost(callback: (this: this) => Code) {
     this.blockPostCbs[this.blockPostCbs.length - 1].push(callback);
-  }
-
-  toString(): string {
-    return this.result.join("");
   }
 
   as_printer(): Printer {

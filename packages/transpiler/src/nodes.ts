@@ -1,18 +1,18 @@
 import { SyntaxNode } from "tree-sitter";
-import { Context } from "./context";
+import { Code, Context } from "./context";
 
 export declare interface Printer extends Context {}
 export class Printer {
-  printFile(file: SyntaxNode) {
+  *printFile(file: SyntaxNode): Code {
     for (const item of file.children) {
-      this.printItem(item);
+      yield* this.printItem(item);
     }
   }
 
-  printItem(item: SyntaxNode) {
+  *printItem(item: SyntaxNode): Code {
     switch (item.type) {
       case "function_item":
-        this.printItemFn(item);
+        yield* this.printItemFn(item);
         break;
       case "enum_item":
         // Do nothing for now
@@ -20,179 +20,181 @@ export class Printer {
       default:
         throw new Error("Not implemented: " + item.type);
     }
-    this.push("\n");
+    yield "\n";
   }
 
-  printItemFn(fn: SyntaxNode) {
+  *printItemFn(fn: SyntaxNode): Code {
     const vis = fn.childForFieldName("visibility_modifier");
-    vis && this.printVisibility(vis);
+    if (vis) {
+      yield* this.printVisibility(vis);
+    }
 
-    this.push("function ");
+    yield "function ";
 
     const name = fn.childForFieldName("name")!;
-    this.printIdent(name);
+    yield* this.printIdent(name);
 
-    this.push("(");
+    yield "(";
 
     const parameters = fn.childForFieldName("parameters")!;
     for (const param of parameters.namedChildren) {
-      this.printPatType(param.childForFieldName("pattern")!);
-      this.push(",");
+      yield* this.printPatType(param.childForFieldName("pattern")!);
+      yield ",";
     }
 
-    this.push(") ");
+    yield ") ";
 
     const body = fn.childForFieldName("body")!;
-    this.printBlock(body);
+    yield* this.printBlock(body);
   }
 
-  printVisibility(vis: SyntaxNode) {
+  *printVisibility(vis: SyntaxNode): Code {
     if (vis.type === "public" || vis.type === "restricted") {
-      this.push("export ");
+      yield "export ";
     }
   }
 
-  printPatType(pat: SyntaxNode) {
-    this.printPat(pat);
+  *printPatType(pat: SyntaxNode): Code {
+    yield* this.printPat(pat);
   }
 
-  printPat(pat: SyntaxNode) {
+  *printPat(pat: SyntaxNode): Code {
     switch (pat.type) {
       case "identifier":
-        this.printPatIdent(pat);
+        yield* this.printPatIdent(pat);
         break;
       case "tupleStruct":
-        this.printPatTupleStruct(pat);
+        yield* this.printPatTupleStruct(pat);
         break;
       default:
         throw new Error("Not implemented: " + pat.type);
     }
   }
 
-  printPatTupleStruct(pat: SyntaxNode) {
-    this.push("[");
+  *printPatTupleStruct(pat: SyntaxNode): Code {
+    yield "[";
     for (const elem of pat.namedChildren) {
-      this.printPat(elem);
-      this.push(",");
+      yield* this.printPat(elem);
+      yield ",";
     }
-    this.push("]");
+    yield "]";
   }
 
-  printPatIdent(ident: SyntaxNode) {
-    this.printIdent(ident);
+  *printPatIdent(ident: SyntaxNode): Code {
+    yield* this.printIdent(ident);
   }
 
-  printIdent(ident: SyntaxNode) {
-    this.push(ident.text);
+  *printIdent(ident: SyntaxNode): Code {
+    yield ident.text;
   }
 
-  printBlock(block: SyntaxNode) {
-    this.push("{\n");
+  *printBlock(block: SyntaxNode): Code {
+    yield "{\n";
     this.blockPostCbs.push([]);
 
     for (const stmt of block.namedChildren) {
-      this.printStmt(stmt);
+      yield* this.printStmt(stmt);
     }
 
     for (const append of this.blockPostCbs.pop()!.reverse()) {
-      append();
+      yield* append.call(this);
     }
 
-    this.push("\n}");
+    yield "\n}";
   }
 
-  printStmt(stmt: SyntaxNode) {
+  *printStmt(stmt: SyntaxNode): Code {
     switch (stmt.type) {
       case "local":
-        this.printLocal(stmt);
+        yield* this.printLocal(stmt);
         break;
       default:
-        this.printExpr(stmt);
+        yield* this.printExpr(stmt);
     }
-    this.push(";\n");
+    yield ";\n";
   }
 
-  printLocal(local: SyntaxNode) {
+  *printLocal(local: SyntaxNode): Code {
     const alternative = local.childForFieldName("alternative");
     if (alternative) {
       const value = local.childForFieldName("value")!;
-      this.push("_m0 = ");
-      this.printExpr(value);
-      this.push(";\n");
-      this.push("if (");
+      yield "_m0 = ";
+      yield* this.printExpr(value);
+      yield ";\n";
+      yield "if (";
       this.matchIdentifiers = [];
       this.matchDepth = 0;
-      this.as_matcher_printer().printPatMatcher(
+      yield* this.as_matcher_printer().printPatMatcher(
         local.childForFieldName("pattern")!,
         "_m0"
       );
-      this.push(") {\n");
+      yield ") {\n";
       if (this.matchIdentifiers.length > 0) {
-        this.push(`var ${this.matchIdentifiers.join(",")};\n`);
+        yield `var ${this.matchIdentifiers.join(",")};\n`;
       }
 
-      this.blockPost(() => {
-        this.push("} else");
-        this.printBlock(alternative.namedChildren[0]);
+      this.blockPost(function* () {
+        yield "} else";
+        yield* this.printBlock(alternative.namedChildren[0]);
       });
     } else {
-      this.push("var ");
-      this.printPat(local.childForFieldName("pattern")!);
+      yield "var ";
+      yield* this.printPat(local.childForFieldName("pattern")!);
       const value = local.childForFieldName("value");
       if (value) {
-        this.printExpr(value);
+        yield* this.printExpr(value);
       }
-      this.push(";");
+      yield ";";
     }
   }
 
-  printExpr(expr: SyntaxNode) {
+  *printExpr(expr: SyntaxNode): Code {
     switch (expr.type) {
       case "identifier":
-        this.printIdent(expr);
+        yield* this.printIdent(expr);
         break;
       case "integer_literal":
-        this.push(expr.text);
+        yield expr.text;
         break;
       case "binary_expression":
-        this.printBinary(expr);
+        yield* this.printBinary(expr);
         break;
       case "return_expression":
-        this.printReturn(expr);
+        yield* this.printReturn(expr);
         break;
       case "expression_statement":
-        this.printExprBlock(expr);
+        yield* this.printExprBlock(expr);
         break;
       case "let_declaration":
-        this.printLocal(expr);
+        yield* this.printLocal(expr);
         break;
       default:
         throw new Error("Not implemented: " + expr.type);
     }
   }
 
-  printBinary(binary: SyntaxNode) {
-    this.printExpr(binary.children[0]);
-    this.printBinOp(binary.children[1]);
-    this.printExpr(binary.children[2]);
+  *printBinary(binary: SyntaxNode): Code {
+    yield* this.printExpr(binary.children[0]);
+    yield* this.printBinOp(binary.children[1]);
+    yield* this.printExpr(binary.children[2]);
   }
 
-  printBinOp(op: SyntaxNode) {
-    this.push(op.type);
+  *printBinOp(op: SyntaxNode): Code {
+    yield op.type;
   }
 
-  printReturn(ret: SyntaxNode) {
-    this.push("return ");
+  *printReturn(ret: SyntaxNode): Code {
+    yield "return ";
     const value = ret.namedChildren[0];
     if (value) {
-      this.printExpr(value);
+      yield* this.printExpr(value);
     }
-    this.push(";");
+    yield ";";
   }
 
-  printExprBlock(block: SyntaxNode) {
-    this.push("(() => {");
-    this.printBlock(block);
-    this.push("})()");
+  *printExprBlock(block: SyntaxNode): Code {
+    yield "(() => {";
+    yield* this.printBlock(block);
+    yield "})()";
   }
 }
