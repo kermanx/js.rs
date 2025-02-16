@@ -68,18 +68,15 @@ export function is_alpha(c) {
   return do {
     _m0 = c;
     if (_m0 === "x") {
-      _mr = do {
-        {
-          console.log('"x"');
-          true;
-        }
-      };
+      {
+        console.log('"x"');
+        true;
+      }
     } else if ((_m0 >= "a" && _m0 <= "z") || (_m0 >= "A" && _m0 <= "Z")) {
-      _mr = true;
+      true;
     } else {
-      _mr = false;
+      false;
     }
-    _mr;
   };
 }
-var _mr, _m0, _m1, _m2;
+var _m, _m0, _m1, _m2;

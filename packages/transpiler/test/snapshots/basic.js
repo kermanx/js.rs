@@ -68,24 +68,19 @@ export function main() {
 }
 export function is_alpha(c) {
   {
-    var _do4;
+    var _do3;
     _m0 = c;
     if (_m0 === "x") {
       {
-        var _do3;
-        {
-          console.log('"x"');
-          _do3 = true;
-        }
+        console.log('"x"');
+        _do3 = true;
       }
-      _mr = _do3;
     } else if ((_m0 >= "a" && _m0 <= "z") || (_m0 >= "A" && _m0 <= "Z")) {
-      _mr = true;
+      _do3 = true;
     } else {
-      _mr = false;
+      _do3 = false;
     }
-    _do4 = _mr;
   }
-  return _do4;
+  return _do3;
 }
-var _mr, _m0, _m1, _m2;
+var _m, _m0, _m1, _m2;

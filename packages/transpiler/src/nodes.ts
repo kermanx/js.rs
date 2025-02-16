@@ -8,7 +8,7 @@ export class Printer {
     for (const item of file.children) {
       yield* this.printItem(item);
     }
-    yield "var _mr";
+    yield "var _m";
     for (let i = 0; i < this.maxMatchDepth; i++) {
       yield ",";
       yield `_m${i}`;
@@ -437,22 +437,18 @@ export class Printer {
         this.matchIdentifiers = [];
         yield* this.as_matcher_printer().printPatMatcher(pattern, "_m0");
         yield ") {\n";
+        if (this.matchIdentifiers.length > 0) {
+          yield `var ${this.matchIdentifiers.join(",")};\n`;
+        }
       } else {
         yield "else {\n";
       }
 
       const value = arm.childForFieldName("value")!;
-      yield "_mr = ";
-      yield* this.printExpr(value);
+      yield* this.printStmt(value);
 
       yield "}";
     }
-
-    if (this.matchIdentifiers.length > 0) {
-      yield `var ${this.matchIdentifiers.join(",")};\n`;
-    }
-
-    yield "\n_mr;";
   }
 
   *printIf(ifExpr: SyntaxNode): Code {
