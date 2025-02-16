@@ -34,7 +34,7 @@ function swap(a, b) {
     effect1() +
     do {
       {
-        if (a.v > b.v) {
+        if (a[_r.REF_TARGET] > b[_r.REF_TARGET]) {
           {
             effect2();
           }
@@ -46,19 +46,19 @@ function swap(a, b) {
       }
     } +
     effect3();
-  var tmp = a.v;
-  a.v = b.v;
-  b.v = tmp;
+  var tmp = a[_r.REF_TARGET];
+  a[_r.REF_TARGET] = b[_r.REF_TARGET];
+  b[_r.REF_TARGET] = tmp;
 }
 export function main() {
   var a = 1;
   var b = 2;
   swap(
-    _r.refMut(
+    _r.ref(
       () => a,
       (v) => (a = v),
     ),
-    _r.refMut(
+    _r.ref(
       () => b,
       (v) => (b = v),
     ),

@@ -1,9 +1,9 @@
-const discriminantKey = Symbol("Discriminant");
+const DISCRIMINANT_KEY = Symbol("Discriminant");
 
 export function variant(discriminant) {
   return (...data) => ({
     __proto__: this.prototype,
-    [discriminantKey]: discriminant,
+    [DISCRIMINANT_KEY]: discriminant,
     data,
   });
 }
@@ -11,28 +11,69 @@ export function variant(discriminant) {
 export function unitVariant(discriminant) {
   return {
     __proto__: this.prototype,
-    [discriminantKey]: discriminant,
+    [DISCRIMINANT_KEY]: discriminant,
     data,
   };
 }
 
 export function matches(value, discriminant) {
-  return value?.[discriminantKey] === discriminant ? value.data : null;
+  return value?.[DISCRIMINANT_KEY] === discriminant ? value.data : null;
 }
 
 export function impl(target, members) {
   Object.assign(target.prototype, members);
 }
 
-export function ref(g) {
-  return Object.defineProperty({}, 'v', {
-    get: g
-  });
-}
+export const REF_TARGET = Symbol("Ref Target");
 
-export function refMut(g, s) {
-  return Object.defineProperty({}, 'v', {
-    get: g,
-    set: s
-  });
+/** @type {ProxyHandler} */
+const refProxyHandler = {
+  get({ g }, prop) {
+    if (prop === REF_TARGET) return g();
+    return Reflect.get(g(), prop);
+  },
+  set({ g, s }, prop, value) {
+    if (prop === REF_TARGET) {
+      s(value);
+      return true;
+    }
+    return Reflect.set(g(), prop, value);
+  },
+  apply({ g }, this, args) {
+    return Reflect.apply(g(), this, args);
+  },
+  construct({ g }, args) {
+    return Reflect.construct(g(), args);
+  },
+  defineProperty({ g }, prop, descriptor) {
+    return Reflect.defineProperty(g(), prop, descriptor);
+  },
+  deleteProperty({ g }, prop) {
+    return Reflect.deleteProperty(g(), prop);
+  },
+  getOwnPropertyDescriptor({ g }, prop) {
+    return Reflect.getOwnPropertyDescriptor(g(), prop);
+  },
+  getPrototypeOf({ g }) {
+    return Reflect.getPrototypeOf(g());
+  },
+  has({ g }, prop) {
+    return Reflect.has(g(), prop);
+  },
+  isExtensible({ g }) {
+    return Reflect.isExtensible(g());
+  },
+  ownKeys({ g }) {
+    return Reflect.ownKeys(g());
+  },
+  preventExtensions({ g }) {
+    return Reflect.preventExtensions(g());
+  },
+  setPrototypeOf({ g }, proto) {
+    return Reflect.setPrototypeOf(g(), proto);
+  },
+};
+
+export function ref(g, s) {
+  return new Proxy({ g, s }, refProxyHandler);
 }
