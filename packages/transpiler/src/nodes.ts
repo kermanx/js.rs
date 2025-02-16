@@ -62,7 +62,7 @@ export class Printer {
     yield ") ";
 
     const body = fn.childForFieldName("body")!;
-    yield* this.printBlock(body);
+    yield* this.printBlock(body, true);
   }
 
   *printPatType(pat: SyntaxNode): Code {
@@ -99,12 +99,26 @@ export class Printer {
     yield ident.text;
   }
 
-  *printBlock(block: SyntaxNode): Code {
+  *printBlock(block: SyntaxNode, implicitReturn = false): Code {
     yield "{\n";
     this.blockPostCbs.push([]);
 
-    for (const stmt of block.namedChildren) {
-      yield* this.printStmt(stmt);
+    for (let i = 0; i < block.namedChildren.length; i++) {
+      const child = block.namedChildren[i];
+      if (i === block.namedChildren.length - 1 && implicitReturn) {
+        if (
+          child.type.endsWith("_expression") ||
+          child.type.endsWith("_literal") ||
+          (child.type === "expression_statement" &&
+            (child.namedChildren[0].type === "match_expression" ||
+              child.namedChildren[0].type === "if_expression"))
+        ) {
+          yield "return ";
+          yield* this.printExpr(child);
+          continue;
+        }
+      }
+      yield* this.printStmt(child);
     }
 
     for (const append of this.blockPostCbs.pop()!.reverse()) {
@@ -117,23 +131,22 @@ export class Printer {
   *printStmt(stmt: SyntaxNode): Code {
     switch (stmt.type) {
       case "expression_statement":
-        yield* this.printExpr(stmt.namedChildren[0]);
+        yield* this.printStmt(stmt.namedChildren[0]);
         break;
       case "let_declaration":
         yield* this.printLocal(stmt);
         break;
+      case "match_expression":
+        yield* this.printMatch(stmt);
+        break;
+      case "block":
+        yield* this.printBlock(stmt);
+        break;
+      case "if_expression":
+        yield* this.printIf(stmt);
+        break;
       default:
-        if (
-          stmt.type.endsWith("_expression") ||
-          stmt.type.endsWith("_literal")
-        ) {
-          if (stmt.type !== "return_expression") {
-            yield "return ";
-          }
-          yield* this.printExpr(stmt);
-        } else {
-          throw new Error("Not implemented: " + stmt.type);
-        }
+        yield* this.printExpr(stmt);
     }
     yield ";\n";
   }
@@ -215,11 +228,14 @@ export class Printer {
       case "scoped_identifier":
         yield* this.printScopedIdent(expr);
         break;
+
+      case "expression_statement":
       case "match_expression":
-        yield* this.printMatch(expr);
-        break;
       case "block":
-        yield* this.printExprBlock(expr);
+      case "if_expression":
+        yield "(do {";
+        yield* this.printStmt(expr);
+        yield "})";
         break;
       default:
         throw new Error("Not implemented: " + expr.type);
@@ -243,12 +259,6 @@ export class Printer {
       yield* this.printExpr(value);
     }
     yield ";";
-  }
-
-  *printExprBlock(block: SyntaxNode): Code {
-    yield "(() => {";
-    yield* this.printBlock(block);
-    yield "})()";
   }
 
   *printFieldExpr(expr: SyntaxNode): Code {
@@ -442,6 +452,18 @@ export class Printer {
       yield `var ${this.matchIdentifiers.join(",")};\n`;
     }
 
-    // TODO: _r
+    yield "\n_mr;";
+  }
+
+  *printIf(ifExpr: SyntaxNode): Code {
+    yield "if (";
+    yield* this.printExpr(ifExpr.childForFieldName("condition")!);
+    yield ") {\n";
+    yield* this.printStmt(ifExpr.childForFieldName("consequence")!);
+    yield "} else {\n";
+    yield* this.printStmt(
+      ifExpr.childForFieldName("alternative")!.namedChildren[0]
+    );
+    yield "}";
   }
 }

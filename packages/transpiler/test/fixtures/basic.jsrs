@@ -28,6 +28,14 @@ impl A {
 }
 
 fn swap(a: &mut i32, b: &mut i32) {
+  let a = effect1() + {
+    if *a > *b {
+      effect2()
+    } else {
+      return 1;
+    }
+  } + effect3();
+
   let tmp = *a;
   *a = *b;
   *b = tmp;

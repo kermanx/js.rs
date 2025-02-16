@@ -5,6 +5,7 @@ export function add(a, b) {
 export function Option() {}
 Option.Some = _r.variant(/*Some*/ 0);
 Option.None = _r.unitVariant(/*None*/ 1);
+
 export function match_test(a) {
   _m0 = a;
   if (
@@ -22,32 +23,29 @@ export function match_test(a) {
 }
 export function A() {}
 A.new = function (a, b) {
-  return {
-    a,
-    b,
-  };
+  return { a, b };
 };
 A.prototype.add = function () {
   return this.a + this.b;
 };
+
 function swap(a, b) {
-  var _do;
-  _do = effect1();
-  {
-    var _do2;
-    {
-      if (a.v > b.v) {
-        {
-          _do2 = effect2();
-        }
-      } else {
-        {
-          return 1;
+  var a =
+    effect1() +
+    do {
+      {
+        if (a.v > b.v) {
+          {
+            effect2();
+          }
+        } else {
+          {
+            return 1;
+          }
         }
       }
-    }
-  }
-  var a = _do + _do2 + effect3();
+    } +
+    effect3();
   var tmp = a.v;
   a.v = b.v;
   b.v = tmp;
@@ -67,25 +65,21 @@ export function main() {
   );
 }
 export function is_alpha(c) {
-  {
-    var _do4;
+  return do {
     _m0 = c;
     if (_m0 === "x") {
-      {
-        var _do3;
+      _mr = do {
         {
           console.log('"x"');
-          _do3 = true;
+          true;
         }
-      }
-      _mr = _do3;
+      };
     } else if ((_m0 >= "a" && _m0 <= "z") || (_m0 >= "A" && _m0 <= "Z")) {
       _mr = true;
     } else {
       _mr = false;
     }
-    _do4 = _mr;
-  }
-  return _do4;
+    _mr;
+  };
 }
 var _mr, _m0, _m1, _m2;
