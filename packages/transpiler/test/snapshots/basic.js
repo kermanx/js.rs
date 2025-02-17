@@ -15,6 +15,13 @@ export function match_test(a) {
     (y = _m2[1])
   ) {
     var x, y;
+    _m0 = a;
+    if ((_m1 = _r.matches(_m0, /*D*/ 5)) && (z = _m1[1])) {
+      var z;
+      {
+        return Option.Some(z);
+      }
+    }
     return Option.Some(x + y);
   } else {
     return Option.None;
@@ -41,9 +48,7 @@ function swap(a, b) {
           _do2 = effect2();
         }
       } else {
-        {
-          return 1;
-        }
+        return 1;
       }
     }
   }

@@ -473,15 +473,36 @@ export class Printer {
   }
 
   *printIf(ifExpr: SyntaxNode): Code {
-    yield "if (";
-    yield* this.printExpr(ifExpr.childForFieldName("condition")!);
-    yield ") {\n";
+    const condition = ifExpr.childForFieldName("condition")!;
+    if (condition.type === "let_condition") {
+      const pattern = condition.childForFieldName("pattern")!;
+      const value = condition.childForFieldName("value")!;
+
+      yield "_m0 = ";
+      yield* this.printExpr(value);
+      yield ";\n";
+      yield "if (";
+      this.matchIdentifiers = [];
+      this.matchDepth = 0;
+      yield* this.as_matcher_printer().printPatMatcher(pattern, "_m0");
+      yield ") {\n";
+      if (this.matchIdentifiers.length > 0) {
+        yield `var ${this.matchIdentifiers.join(",")};\n`;
+      }
+    } else {
+      yield "if (";
+      yield* this.printExpr(ifExpr.childForFieldName("condition")!);
+      yield ") {\n";
+    }
+
     yield* this.printStmt(ifExpr.childForFieldName("consequence")!);
-    yield "} else {\n";
-    yield* this.printStmt(
-      ifExpr.childForFieldName("alternative")!.namedChildren[0]
-    );
     yield "}";
+
+    const alternative = ifExpr.childForFieldName("alternative");
+    if (alternative) {
+      yield "else ";
+      yield* this.printStmt(alternative.namedChildren[0]);
+    }
   }
 
   *printArray(array: SyntaxNode): Code {
