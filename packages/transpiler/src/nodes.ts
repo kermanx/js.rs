@@ -78,10 +78,17 @@ export class Printer {
       case "tuple_pattern":
         yield* this.printPatTuple(pat);
         break;
+      case "struct_pattern":
+        yield* this.printPatStruct(pat);
+        break;
 
       default:
         throw new Error("Not implemented: " + pat.type);
     }
+  }
+
+  *printPatIdent(ident: SyntaxNode): Code {
+    yield* this.printIdent(ident);
   }
 
   *printPatTuple(pat: SyntaxNode): Code {
@@ -93,8 +100,23 @@ export class Printer {
     yield "]";
   }
 
-  *printPatIdent(ident: SyntaxNode): Code {
-    yield* this.printIdent(ident);
+  *printPatStruct(pat: SyntaxNode): Code {
+    yield "{";
+    for (const field of pat.namedChildren.slice(1)) {
+      if (field.type === "remaining_field_pattern") {
+        continue;
+      }
+      const name = field.childForFieldName("name")!;
+      const pattern = field.childForFieldName("pattern");
+      if (pattern) {
+        yield `"${name.text}":`;
+        yield* this.printPat(field.childForFieldName("pattern")!);
+      } else {
+        yield field.text;
+      }
+      yield ",";
+    }
+    yield "}";
   }
 
   *printIdent(ident: SyntaxNode): Code {
@@ -156,19 +178,17 @@ export class Printer {
   }
 
   *printLocal(local: SyntaxNode): Code {
+    const pattern = local.childForFieldName("pattern")!;
     const alternative = local.childForFieldName("alternative");
     if (alternative) {
       const value = local.childForFieldName("value")!;
-      yield "_m0 = ";
+      yield "_m0 = _r.destructure(";
       yield* this.printExpr(value);
-      yield ";\n";
+      yield ");\n";
       yield "if (";
       this.matchIdentifiers = [];
       this.matchDepth = 0;
-      yield* this.as_matcher_printer().printPatMatcher(
-        local.childForFieldName("pattern")!,
-        "_m0"
-      );
+      yield* this.as_matcher_printer().printPatMatcher(pattern, "_m0");
       yield ") {\n";
       if (this.matchIdentifiers.length > 0) {
         yield `var ${this.matchIdentifiers.join(",")};\n`;
@@ -180,11 +200,17 @@ export class Printer {
       });
     } else {
       yield "var ";
-      yield* this.printPat(local.childForFieldName("pattern")!);
+      yield* this.printPat(pattern);
       const value = local.childForFieldName("value");
       if (value) {
         yield " = ";
+        if (pattern.type !== "identifier") {
+          yield "_r.destructure(";
+        }
         yield* this.printExpr(value);
+        if (pattern.type !== "identifier") {
+          yield ")";
+        }
       }
       yield ";";
     }

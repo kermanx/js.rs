@@ -39,6 +39,10 @@ const refProxyHandler = {
     }
     return Reflect.set(g(), prop, value);
   },
+  has({ g }, prop) {
+    if (prop === REF_TARGET) return true;
+    return Reflect.has(g(), prop);
+  },
   apply({ g }, this, args) {
     return Reflect.apply(g(), this, args);
   },
@@ -57,9 +61,6 @@ const refProxyHandler = {
   getPrototypeOf({ g }) {
     return Reflect.getPrototypeOf(g());
   },
-  has({ g }, prop) {
-    return Reflect.has(g(), prop);
-  },
   isExtensible({ g }) {
     return Reflect.isExtensible(g());
   },
@@ -76,6 +77,21 @@ const refProxyHandler = {
 
 export function ref(g, s) {
   return new Proxy({ g, s }, refProxyHandler);
+}
+
+/** @type {ProxyHandler} */
+const destructRefProxyHandler = {
+  get(r, prop) {
+    return ref(() => r[prop], (v) => r[prop] = v);
+  },
+}
+
+export function destruct(v) {
+  if (REF_TARGET in v) {
+    return new Proxy(v, destructRefProxyHandler);
+  } else {
+    return v;
+  }
 }
 
 const IS_RANGE = Symbol("Is Range");

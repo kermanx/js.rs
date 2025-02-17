@@ -6,7 +6,7 @@ export function Option() {}
 Option.Some = _r.variant(/*Some*/ 0);
 Option.None = _r.unitVariant(/*None*/ 1);
 export function match_test(a) {
-  _m0 = a;
+  _m0 = _r.destructure(a);
   if (
     (_m1 = _r.matches(_m0, /*A*/ 2)) &&
     (_m2 = _r.matches(_m1[1], /*B*/ 3)) &&
@@ -111,7 +111,7 @@ export function array() {
 }
 export function tuple() {
   var t = [1, 2, 3];
-  var [a, b, c] = t;
+  var [a, b, c] = _r.destructure(t);
   var x = t[0] + t[1];
   _m0 = t;
   if (_m0.length === 3 && (_m1 = _m0) && _m1[0] === 1 && (a = _m1[1]) && true) {
@@ -120,5 +120,8 @@ export function tuple() {
   } else {
     log('"other"');
   }
+}
+export function structs(x) {
+  var { a, b: c } = _r.destructure(x);
 }
 var _m, _m0, _m1, _m2;
