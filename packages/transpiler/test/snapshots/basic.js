@@ -89,5 +89,31 @@ export function array() {
   var x = arr[0] + arr2[1];
   var s = _r.range(1, 3 + 1);
   var y = _r.index(arr, s);
+  _m0 = arr;
+  if (
+    _m0.length >= 4 &&
+    (_m1 = _m0) &&
+    _m1[0] === 1 &&
+    (a = _m1[1]) &&
+    (b = _m1.at(-2)) &&
+    true
+  ) {
+    var a, b;
+    log(a, b);
+  } else {
+    log('"other"');
+  }
+}
+export function tuple() {
+  var t = [1, 2, 3];
+  var [a, b, c] = t;
+  var x = t[0] + t[1];
+  _m0 = t;
+  if (_m0.length === 3 && (_m1 = _m0) && _m1[0] === 1 && (a = _m1[1]) && true) {
+    var a;
+    log(a);
+  } else {
+    log('"other"');
+  }
 }
 var _m, _m0, _m1, _m2;

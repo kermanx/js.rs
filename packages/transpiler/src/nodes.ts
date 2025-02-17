@@ -74,15 +74,17 @@ export class Printer {
       case "identifier":
         yield* this.printPatIdent(pat);
         break;
-      case "tupleStruct":
-        yield* this.printPatTupleStruct(pat);
+      case "slice_pattern":
+      case "tuple_pattern":
+        yield* this.printPatTuple(pat);
         break;
+
       default:
         throw new Error("Not implemented: " + pat.type);
     }
   }
 
-  *printPatTupleStruct(pat: SyntaxNode): Code {
+  *printPatTuple(pat: SyntaxNode): Code {
     yield "[";
     for (const elem of pat.namedChildren) {
       yield* this.printPat(elem);
@@ -144,6 +146,8 @@ export class Printer {
         break;
       case "if_expression":
         yield* this.printIf(stmt);
+        break;
+      case "empty_statement":
         break;
       default:
         yield* this.printExpr(stmt);
@@ -229,6 +233,7 @@ export class Printer {
         yield* this.printScopedIdent(expr);
         break;
       case "array_expression":
+      case "tuple_expression":
         yield* this.printArray(expr);
         break;
       case "index_expression":
@@ -276,7 +281,16 @@ export class Printer {
 
     yield "(";
     yield* this.printExpr(value);
-    yield `).${field.text}`;
+    yield `)`;
+
+    if (/\d/.test(field.text[0])) {
+      yield "[";
+      yield field.text;
+      yield "]";
+    } else {
+      yield ".";
+      yield field.text;
+    }
   }
 
   *printTypeIdent(ident: SyntaxNode): Code {
