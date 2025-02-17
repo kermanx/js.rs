@@ -120,4 +120,10 @@ export function tuple() {
 export function structs(x) {
   var { a, b: c } = _r.destructure(x);
 }
+export function closures(x) {
+  var s = (a, b) => {
+    return a + b;
+  };
+  var t = (x) => this.value + 1;
+}
 var _m, _m0, _m1, _m2;

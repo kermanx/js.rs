@@ -93,3 +93,10 @@ pub fn tuple() {
 pub fn structs(x: A) {
   let A { a, b: c, .. } = x;
 }
+
+pub fn closures(x: i32) {
+  let s = |a, b: i32| -> i32 {
+    a + b
+  };
+  let t = |x| self.value + 1;
+}

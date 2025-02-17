@@ -38,35 +38,49 @@ export class Printer {
     yield "\n";
   }
 
-  *printItemFn(fn: SyntaxNode, isDeclaration = true): Code {
+  *printItemFn(fn: SyntaxNode, isDeclaration = true, isClosure = false): Code {
     if (isDeclaration && fn.namedChildren[0]?.type === "visibility_modifier") {
       yield "export ";
     }
 
-    yield "function ";
+    if (!isClosure) {
+      yield "function ";
 
-    const name = fn.childForFieldName("name")!;
-    if (isDeclaration) {
-      yield* this.printIdent(name);
+      if (isDeclaration) {
+        const name = fn.childForFieldName("name")!;
+        yield* this.printIdent(name);
+      }
     }
 
     yield "(";
 
     const parameters = fn.childForFieldName("parameters")!;
     for (const param of parameters.namedChildren) {
-      if (param.type === "self_parameter") continue;
-      yield* this.printPatType(param.childForFieldName("pattern")!);
+      if (param.type === "self_parameter") {
+        continue;
+      } else if (param.type === "parameter") {
+        yield* this.printPat(param.childForFieldName("pattern")!);
+      } else if (
+        param.type === "identifier" ||
+        param.type === "type_identifier"
+      ) {
+        yield* this.printIdent(param);
+      }
       yield ",";
     }
 
     yield ") ";
 
-    const body = fn.childForFieldName("body")!;
-    yield* this.printBlock(body, true);
-  }
+    if (isClosure) {
+      yield "=> ";
+    }
 
-  *printPatType(pat: SyntaxNode): Code {
-    yield* this.printPat(pat);
+    const body = fn.childForFieldName("body")!;
+    if (body.type === 'block') {
+      yield* this.printBlock(body, true);
+    } else {
+      yield* this.printExpr(body);
+    }
   }
 
   *printPat(pat: SyntaxNode): Code {
@@ -267,6 +281,9 @@ export class Printer {
         break;
       case "range_expression":
         yield* this.printRange(expr);
+        break;
+      case "closure_expression":
+        yield* this.printItemFn(expr, false, true);
         break;
 
       case "expression_statement":
