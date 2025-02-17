@@ -28,55 +28,60 @@ export const REF_TARGET = Symbol("Ref Target");
 
 /** @type {ProxyHandler} */
 const refProxyHandler = {
-  get({ g }, prop) {
-    if (prop === REF_TARGET) return g();
-    return Reflect.get(g(), prop);
+  get({ v }, prop) {
+    if (prop === REF_TARGET) return v;
+    return Reflect.get(v, prop);
   },
-  set({ g, s }, prop, value) {
+  set(target, prop, value) {
     if (prop === REF_TARGET) {
-      s(value);
+      target.v = value;
+      target.s(value);
       return true;
     }
-    return Reflect.set(g(), prop, value);
+    return Reflect.set(target.v, prop, value);
   },
-  has({ g }, prop) {
+  has({ v }, prop) {
     if (prop === REF_TARGET) return true;
-    return Reflect.has(g(), prop);
+    return Reflect.has(v, prop);
   },
-  apply({ g }, this, args) {
-    return Reflect.apply(g(), this, args);
+  apply({ v }, this, args) {
+    return Reflect.apply(v, this, args);
   },
-  construct({ g }, args) {
-    return Reflect.construct(g(), args);
+  construct({ v }, args) {
+    return Reflect.construct(v, args);
   },
-  defineProperty({ g }, prop, descriptor) {
-    return Reflect.defineProperty(g(), prop, descriptor);
+  defineProperty({ v }, prop, descriptor) {
+    return Reflect.defineProperty(v, prop, descriptor);
   },
-  deleteProperty({ g }, prop) {
-    return Reflect.deleteProperty(g(), prop);
+  deleteProperty({ v }, prop) {
+    return Reflect.deleteProperty(v, prop);
   },
-  getOwnPropertyDescriptor({ g }, prop) {
-    return Reflect.getOwnPropertyDescriptor(g(), prop);
+  getOwnPropertyDescriptor({ v }, prop) {
+    return Reflect.getOwnPropertyDescriptor(v, prop);
   },
-  getPrototypeOf({ g }) {
-    return Reflect.getPrototypeOf(g());
+  getPrototypeOf({ v }) {
+    return Reflect.getPrototypeOf(v);
   },
-  isExtensible({ g }) {
-    return Reflect.isExtensible(g());
+  isExtensible({ v }) {
+    return Reflect.isExtensible(v);
   },
-  ownKeys({ g }) {
-    return Reflect.ownKeys(g());
+  ownKeys({ v }) {
+    return Reflect.ownKeys(v);
   },
-  preventExtensions({ g }) {
-    return Reflect.preventExtensions(g());
+  preventExtensions({ v }) {
+    return Reflect.preventExtensions(v);
   },
-  setPrototypeOf({ g }, proto) {
-    return Reflect.setPrototypeOf(g(), proto);
+  setPrototypeOf({ v }, proto) {
+    return Reflect.setPrototypeOf(v, proto);
   },
 };
 
-export function ref(g, s) {
-  return new Proxy({ g, s }, refProxyHandler);
+export function refMut(v, s) {
+  return new Proxy({ v, s }, refProxyHandler);
+}
+
+export function deref(v) {
+  return REF_TARGET in v ? v[REF_TARGET] : v;
 }
 
 /** @type {ProxyHandler} */

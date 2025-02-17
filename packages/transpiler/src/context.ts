@@ -11,6 +11,11 @@ export class Context {
   reexportsAll: string[] = [];
   _matchDepth = 0;
   maxMatchDepth = 0;
+  insideLValue: boolean[] = [false];
+
+  get isInsideLValue() {
+    return this.insideLValue[this.insideLValue.length - 1];
+  }
 
   get matchDepth() {
     return this._matchDepth;

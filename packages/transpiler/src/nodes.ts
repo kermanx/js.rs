@@ -326,7 +326,9 @@ export class Printer {
     const field = expr.childForFieldName("field")!;
 
     yield "(";
+    this.insideLValue.push(false);
     yield* this.printExpr(value);
+    this.insideLValue.pop();
     yield `)`;
 
     if (/\d/.test(field.text[0])) {
@@ -437,9 +439,17 @@ export class Printer {
   *printUnary(unary: SyntaxNode): Code {
     const op = unary.children[0].type;
     if (op === "*") {
-      yield "(";
-      yield* this.printExpr(unary.children[1]);
-      yield ")[_r.REF_TARGET]";
+      if (this.isInsideLValue) {
+        yield "(";
+        this.insideLValue.push(false);
+        yield* this.printExpr(unary.children[1]);
+        this.insideLValue.pop();
+        yield ")[_r.REF_TARGET]";
+      } else {
+        yield "_r.deref(";
+        yield* this.printExpr(unary.children[1]);
+        yield ")";
+      }
     } else {
       throw new Error("Not implemented: " + op);
     }
@@ -449,7 +459,9 @@ export class Printer {
     const left = assignment.childForFieldName("left")!;
     const right = assignment.childForFieldName("right")!;
     yield "(";
+    this.insideLValue.push(true);
     yield* this.printExpr(left);
+    this.insideLValue.pop();
     yield " = ";
     yield* this.printExpr(right);
     yield ")";
@@ -472,15 +484,15 @@ export class Printer {
     const isMut = ref.childCount === 3;
     const value = ref.childForFieldName("value")!;
 
-    yield "_r.ref(() => (";
-    yield* this.printExpr(value);
-    yield ")";
     if (isMut) {
+      yield "_r.ref(";
+      yield* this.printExpr(value);
       yield ", v => (";
       yield* this.printExpr(value);
-      yield ") = v";
+      yield ") = v)";
+    } else {
+      yield* this.printExpr(value);
     }
-    yield ")";
   }
 
   *printScopedIdent(ident: SyntaxNode): Code {
