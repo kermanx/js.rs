@@ -83,4 +83,11 @@ export function is_alpha(c) {
   }
   return _do3;
 }
+export function array() {
+  var arr = [1, 2, 3];
+  var arr2 = [1, 3];
+  var x = arr[0] + arr2[1];
+  var s = _r.range(1, 3 + 1);
+  var y = _r.index(arr, s);
+}
 var _m, _m0, _m1, _m2;

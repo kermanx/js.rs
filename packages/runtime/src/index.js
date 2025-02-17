@@ -77,3 +77,21 @@ const refProxyHandler = {
 export function ref(g, s) {
   return new Proxy({ g, s }, refProxyHandler);
 }
+
+const IS_RANGE = Symbol("Is Range");
+
+export function range(start, end) {
+  return {
+    [IS_RANGE]: true,
+    start,
+    end,
+  }
+}
+
+export function index(target, index) {
+  if (index[IS_RANGE]) {
+    return target.slice(index.start, index.end);
+  } else {
+    return target[index];
+  }
+}

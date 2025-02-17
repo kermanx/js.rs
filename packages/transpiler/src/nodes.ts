@@ -228,6 +228,15 @@ export class Printer {
       case "scoped_identifier":
         yield* this.printScopedIdent(expr);
         break;
+      case "array_expression":
+        yield* this.printArray(expr);
+        break;
+      case "index_expression":
+        yield* this.printIndex(expr);
+        break;
+      case "range_expression":
+        yield* this.printRange(expr);
+        break;
 
       case "expression_statement":
       case "match_expression":
@@ -459,5 +468,41 @@ export class Printer {
       ifExpr.childForFieldName("alternative")!.namedChildren[0]
     );
     yield "}";
+  }
+
+  *printArray(array: SyntaxNode): Code {
+    yield "[";
+    for (const elem of array.namedChildren) {
+      yield* this.printExpr(elem);
+      yield ",";
+    }
+    yield "]";
+  }
+
+  *printIndex(index: SyntaxNode): Code {
+    if (index.namedChild(1)!.type.endsWith("_literal")) {
+      yield "(";
+      yield* this.printExpr(index.namedChild(0)!);
+      yield ")[";
+      yield* this.printExpr(index.namedChild(1)!);
+      yield "]";
+    } else {
+      yield "_r.index(";
+      yield* this.printExpr(index.namedChild(0)!);
+      yield ",";
+      yield* this.printExpr(index.namedChild(1)!);
+      yield ")";
+    }
+  }
+
+  *printRange(range: SyntaxNode): Code {
+    yield "_r.range(";
+    yield* this.printExpr(range.child(0)!);
+    yield ",";
+    yield* this.printExpr(range.child(2)!);
+    if (range.child(1)!.type === "..=") {
+      yield "+1";
+    }
+    yield ")";
   }
 }
