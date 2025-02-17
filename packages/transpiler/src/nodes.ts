@@ -199,7 +199,7 @@ export class Printer {
     const alternative = local.childForFieldName("alternative");
     if (alternative) {
       const value = local.childForFieldName("value")!;
-      yield "_m0 = _r.destructure(";
+      yield "_m0 = _r.destruct(";
       yield* this.printExpr(value);
       yield ");\n";
       yield "if (";
