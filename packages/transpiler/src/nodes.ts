@@ -76,7 +76,7 @@ export class Printer {
     }
 
     const body = fn.childForFieldName("body")!;
-    if (body.type === 'block') {
+    if (body.type === "block") {
       yield* this.printBlock(body, true);
     } else {
       yield* this.printExpr(body);
@@ -337,7 +337,16 @@ export class Printer {
   }
 
   *printTypeIdent(ident: SyntaxNode): Code {
-    yield* this.printIdent(ident);
+    switch (ident.type) {
+      case "type_identifier":
+        yield* this.printIdent(ident);
+        break;
+      case "generic_type":
+        yield* this.printTypeIdent(ident.childForFieldName("type")!);
+        break;
+      default:
+        throw new Error("Not implemented: " + ident.type);
+    }
   }
 
   *printItemImpl(impl: SyntaxNode): Code {
