@@ -1,4 +1,12 @@
 import * as _r from "@jsrs/runtime";
+import * as y from "@/x/x/y";
+import { y1, y2 } from "@/x/x/y";
+import * as t from "@/x/z";
+import { t as h } from "@/x";
+export { y, y1, y2, t, h };
+import { x } from "t";
+export { x };
+export * from "s";
 export function add(a, b) {
   return a + b;
 }

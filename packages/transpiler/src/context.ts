@@ -7,6 +7,8 @@ export class Context {
   discriminants = new Map<string, number>();
   blockPostCbs: Array<Array<(this: this) => Code>> = [[]];
   matchIdentifiers: string[] = [];
+  reexportsNamed: string[] = [];
+  reexportsAll: string[] = [];
   _matchDepth = 0;
   maxMatchDepth = 0;
 

@@ -32,6 +32,9 @@ export class Printer {
         break;
       case "line_comment":
         break;
+      case "use_declaration":
+        yield* this.printUse(item);
+        break;
       default:
         throw new Error("Not implemented: " + item.type);
     }
@@ -591,5 +594,122 @@ export class Printer {
       yield "+1";
     }
     yield ")";
+  }
+
+  *printUse(use: SyntaxNode): Code {
+    this.reexportsNamed = [];
+    this.reexportsAll = [];
+    yield* this.printUseItem(use.childForFieldName("argument")!);
+    if (use.namedChildren[0]?.type === "visibility_modifier") {
+      if (this.reexportsNamed.length) {
+        yield "export {";
+        yield this.reexportsNamed.join(", ");
+        yield "};\n";
+      }
+      if (this.reexportsAll.length) {
+        for (const path of this.reexportsAll) {
+          yield `export * from "${path}";\n`;
+        }
+      }
+    } else {
+      if (this.reexportsAll.length) {
+        throw new Error("Wildcard import is not supported");
+      }
+    }
+  }
+
+  *printUseItem(item: SyntaxNode, base: string = "", alias?: string): Code {
+    switch (item.type) {
+      case "scoped_use_list": {
+        const path = getPath(item.namedChildren[0]);
+        let wildcard: string | undefined;
+        const named: [string, string?][] = [];
+        for (const child of item.namedChildren[1].namedChildren) {
+          if (child.type === "self") {
+            wildcard = getSelfName(item.namedChildren[0]);
+          } else if (child.type === "identifier") {
+            named.push([child.text]);
+          } else if (child.type === "use_as_clause") {
+            const original = child.namedChildren[0];
+            const alias = child.namedChildren[1].text;
+            if (original.type === "self") {
+              wildcard = alias;
+            } else if (original.type === "identifier") {
+              named.push([original.text, alias]);
+            } else {
+              yield* this.printUseItem(original, path, alias);
+            }
+          } else {
+            yield* this.printUseItem(child, path);
+          }
+        }
+        if (wildcard) {
+          this.reexportsNamed.push(wildcard);
+          yield `import * as ${wildcard} from "${path}";\n`;
+        }
+        if (named.length > 0) {
+          yield "import {";
+          for (const [name, alias] of named) {
+            this.reexportsNamed.push(alias || name);
+            yield ` ${name}${alias ? ` as ${alias}` : ""},`;
+          }
+          yield ` } from "${path}";\n`;
+        }
+        break;
+      }
+      case "scoped_identifier": {
+        const path = getPath(item.namedChildren[0]);
+        const name = item.namedChildren[1].text;
+        if (name === "self") {
+          const name = alias || getSelfName(item.namedChildren[0]);
+          this.reexportsNamed.push(name);
+          yield `import * as ${name} from "${path}";\n`;
+        } else {
+          this.reexportsNamed.push(alias || name);
+          yield `import { ${name}${alias ? ` as ${alias}` : ""} } from "${path}";\n`;
+        }
+        break;
+      }
+      case "use_as_clause": {
+        const original = item.namedChildren[0];
+        yield* this.printUseItem(original, "", alias);
+        break;
+      }
+      case "use_wildcard": {
+        const path = getPath(item.namedChildren[0]);
+        this.reexportsAll.push(path);
+        break;
+      }
+      default:
+        throw new Error("Not implemented: " + item.type);
+    }
+
+    function getPath(path: SyntaxNode): string {
+      return base ? `${base}/${getPathImpl(path)}` : getPathImpl(path);
+    }
+
+    function getPathImpl(path: SyntaxNode): string {
+      if (path.type === "identifier") {
+        return `${path.text}`;
+      } else if (path.type === "scoped_identifier") {
+        return `${getPathImpl(path.namedChildren[0])}/${path.namedChildren[1].text}`;
+      } else if (path.type === "crate") {
+        return `@`;
+      } else {
+        throw new Error("Not implemented: " + path.type);
+      }
+    }
+
+    function getSelfName(path: SyntaxNode): string {
+      if (path.type === "identifier") {
+        return path.text;
+      } else if (path.type === "scoped_identifier") {
+        return path.namedChildren[1].text;
+      } else if (path.type === "crate") {
+        return "crate";
+      } else {
+        throw new Error("Not implemented: " + path.type);
+      }
+    }
   }
 }
