@@ -1,4 +1,25 @@
 import { defineConfig } from "tsup";
+import fs from "fs";
+
+const writeFile = fs.promises.writeFile;
+fs.promises.writeFile = (path, data, options) => {
+  if (typeof path === "string" && path.endsWith(".node")) {
+    try {
+      return writeFile(path, data, options);
+    } catch {}
+  }
+  return writeFile(path, data, options);
+};
+
+const unlinkSync = fs.unlinkSync;
+fs.unlinkSync = (path) => {
+  if (typeof path === "string" && path.endsWith(".node")) {
+    try {
+      return unlinkSync(path);
+    } catch {}
+  }
+  return unlinkSync(path);
+};
 
 export default defineConfig({
   entry: {
