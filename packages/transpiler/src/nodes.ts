@@ -6,7 +6,7 @@ export class Printer {
   *printFile(file: SyntaxNode): Code {
     yield "import * as _r from \"@jsrs/runtime\";\n";
     for (const item of file.children) {
-      yield * this.printStmt(item);
+      yield* this.printStmt(item);
     }
     yield "var _m";
     for (let i = 0; i < this.maxMatchDepth; i++) {
@@ -26,7 +26,7 @@ export class Printer {
 
       if (isDeclaration) {
         const name = fn.childForFieldName("name")!;
-        yield * this.printIdent(name);
+        yield* this.printIdent(name);
       }
     }
 
@@ -38,13 +38,13 @@ export class Printer {
         continue;
       }
       else if (param.type === "parameter") {
-        yield * this.printPat(param.childForFieldName("pattern")!);
+        yield* this.printPat(param.childForFieldName("pattern")!);
       }
       else if (
         param.type === "identifier"
         || param.type === "type_identifier"
       ) {
-        yield * this.printIdent(param);
+        yield* this.printIdent(param);
       }
       yield [",", param.startPosition];
     }
@@ -57,24 +57,24 @@ export class Printer {
 
     const body = fn.childForFieldName("body")!;
     if (body.type === "block") {
-      yield * this.printBlock(body, true);
+      yield* this.printBlock(body, true);
     }
     else {
-      yield * this.printExpr(body);
+      yield* this.printExpr(body);
     }
   }
 
   *printPat(pat: SyntaxNode): Code {
     switch (pat.type) {
       case "identifier":
-        yield * this.printPatIdent(pat);
+        yield* this.printPatIdent(pat);
         break;
       case "slice_pattern":
       case "tuple_pattern":
-        yield * this.printPatTuple(pat);
+        yield* this.printPatTuple(pat);
         break;
       case "struct_pattern":
-        yield * this.printPatStruct(pat);
+        yield* this.printPatStruct(pat);
         break;
 
       default:
@@ -83,13 +83,13 @@ export class Printer {
   }
 
   *printPatIdent(ident: SyntaxNode): Code {
-    yield * this.printIdent(ident);
+    yield* this.printIdent(ident);
   }
 
   *printPatTuple(pat: SyntaxNode): Code {
     yield ["[", pat.startPosition];
     for (const elem of pat.namedChildren) {
-      yield * this.printPat(elem);
+      yield* this.printPat(elem);
       yield [",", elem.startPosition];
     }
     yield ["]", pat.startPosition];
@@ -105,7 +105,7 @@ export class Printer {
       const pattern = field.childForFieldName("pattern");
       if (pattern) {
         yield [`"${name.text}":`, name.startPosition];
-        yield * this.printPat(field.childForFieldName("pattern")!);
+        yield* this.printPat(field.childForFieldName("pattern")!);
       }
       else {
         yield [field.text, field.startPosition];
@@ -134,15 +134,15 @@ export class Printer {
               || child.namedChildren[0].type === "if_expression"))
         ) {
           yield ["return ", child.startPosition];
-          yield * this.printExpr(child);
+          yield* this.printExpr(child);
           continue;
         }
       }
-      yield * this.printStmt(child);
+      yield* this.printStmt(child);
     }
 
     for (const append of this.blockPostCbs.pop()!.reverse()) {
-      yield * append.call(this);
+      yield* append.call(this);
     }
 
     yield ["\n}", block.endPosition];
@@ -151,41 +151,41 @@ export class Printer {
   *printStmt(node: SyntaxNode): Code {
     switch (node.type) {
       case "function_item":
-        yield * this.printItemFn(node);
+        yield* this.printItemFn(node);
         break;
       case "enum_item":
-        yield * this.printItemEnum(node);
+        yield* this.printItemEnum(node);
         break;
       case "struct_item":
-        yield * this.printItemStruct(node);
+        yield* this.printItemStruct(node);
         break;
       case "impl_item":
-        yield * this.printItemImpl(node);
+        yield* this.printItemImpl(node);
         break;
       case "line_comment":
         break;
       case "use_declaration":
-        yield * this.printUse(node);
+        yield* this.printUse(node);
         break;
       case "expression_statement":
-        yield * this.printStmt(node.namedChildren[0]);
+        yield* this.printStmt(node.namedChildren[0]);
         break;
       case "let_declaration":
-        yield * this.printLocal(node);
+        yield* this.printLocal(node);
         break;
       case "match_expression":
-        yield * this.printMatch(node);
+        yield* this.printMatch(node);
         break;
       case "block":
-        yield * this.printBlock(node);
+        yield* this.printBlock(node);
         break;
       case "if_expression":
-        yield * this.printIf(node);
+        yield* this.printIf(node);
         break;
       case "empty_statement":
         break;
       default:
-        yield * this.printExpr(node);
+        yield* this.printExpr(node);
     }
     yield [";\n", node.endPosition];
   }
@@ -196,12 +196,12 @@ export class Printer {
     if (alternative) {
       const value = local.childForFieldName("value")!;
       yield ["_m0 = _r.destruct(", local.startPosition];
-      yield * this.printExpr(value);
+      yield* this.printExpr(value);
       yield [");\n", value.endPosition];
       yield ["if (", local.startPosition];
       this.matchIdentifiers = [];
       this.matchDepth = 0;
-      yield * this.as_matcher_printer().printPatMatcher(pattern, "_m0");
+      yield* this.as_matcher_printer().printPatMatcher(pattern, "_m0");
       yield [") {\n", pattern.endPosition];
       if (this.matchIdentifiers.length > 0) {
         yield [`var ${this.matchIdentifiers.join(",")};\n`, local.startPosition];
@@ -209,19 +209,19 @@ export class Printer {
 
       this.blockPost(function* () {
         yield ["} else", alternative.startPosition];
-        yield * this.printBlock(alternative.namedChildren[0]);
+        yield* this.printBlock(alternative.namedChildren[0]);
       });
     }
     else {
       yield ["var ", local.startPosition];
-      yield * this.printPat(pattern);
+      yield* this.printPat(pattern);
       const value = local.childForFieldName("value");
       if (value) {
         yield [" = ", value.startPosition];
         if (pattern.type !== "identifier") {
           yield ["_r.destructure(", pattern.startPosition];
         }
-        yield * this.printExpr(value);
+        yield* this.printExpr(value);
         if (pattern.type !== "identifier") {
           yield [")", value.endPosition];
         }
@@ -233,7 +233,7 @@ export class Printer {
   *printExpr(expr: SyntaxNode): Code {
     switch (expr.type) {
       case "identifier":
-        yield * this.printIdent(expr);
+        yield* this.printIdent(expr);
         break;
       case "integer_literal":
       case "boolean_literal":
@@ -243,51 +243,51 @@ export class Printer {
         yield [JSON.stringify(expr.text), expr.startPosition];
         break;
       case "binary_expression":
-        yield * this.printBinary(expr);
+        yield* this.printBinary(expr);
         break;
       case "unary_expression":
-        yield * this.printUnary(expr);
+        yield* this.printUnary(expr);
         break;
       case "return_expression":
-        yield * this.printReturn(expr);
+        yield* this.printReturn(expr);
         break;
       case "struct_expression":
-        yield * this.printStruct(expr);
+        yield* this.printStruct(expr);
         break;
       case "field_expression":
-        yield * this.printFieldExpr(expr);
+        yield* this.printFieldExpr(expr);
         break;
       case "self":
         yield ["this", expr.startPosition];
         break;
       case "assignment_expression":
-        yield * this.printAssignment(expr);
+        yield* this.printAssignment(expr);
         break;
       case "call_expression":
-        yield * this.printCall(expr);
+        yield* this.printCall(expr);
         break;
       case "reference_expression":
-        yield * this.printReference(expr);
+        yield* this.printReference(expr);
         break;
       case "scoped_identifier":
-        yield * this.printScopedIdent(expr);
+        yield* this.printScopedIdent(expr);
         break;
       case "array_expression":
       case "tuple_expression":
-        yield * this.printArray(expr);
+        yield* this.printArray(expr);
         break;
       case "index_expression":
-        yield * this.printIndex(expr);
+        yield* this.printIndex(expr);
         break;
       case "range_expression":
-        yield * this.printRange(expr);
+        yield* this.printRange(expr);
         break;
       case "closure_expression":
-        yield * this.printItemFn(expr, false, true);
+        yield* this.printItemFn(expr, false, true);
         break;
       case "parenthesized_expression":
         yield "(";
-        yield * this.printExpr(expr.namedChildren[0]);
+        yield* this.printExpr(expr.namedChildren[0]);
         yield ")";
         break;
 
@@ -296,7 +296,7 @@ export class Printer {
       case "block":
       case "if_expression":
         yield ["(do {", expr.startPosition];
-        yield * this.printStmt(expr);
+        yield* this.printStmt(expr);
         yield ["})", expr.endPosition];
         break;
       default:
@@ -305,9 +305,9 @@ export class Printer {
   }
 
   *printBinary(binary: SyntaxNode): Code {
-    yield * this.printExpr(binary.children[0]);
-    yield * this.printBinOp(binary.children[1]);
-    yield * this.printExpr(binary.children[2]);
+    yield* this.printExpr(binary.children[0]);
+    yield* this.printBinOp(binary.children[1]);
+    yield* this.printExpr(binary.children[2]);
   }
 
   *printBinOp(op: SyntaxNode): Code {
@@ -318,7 +318,7 @@ export class Printer {
     yield ["return ", ret.startPosition];
     const value = ret.namedChildren[0];
     if (value) {
-      yield * this.printExpr(value);
+      yield* this.printExpr(value);
     }
     yield [";", ret.endPosition];
   }
@@ -328,7 +328,7 @@ export class Printer {
     const field = expr.childForFieldName("field")!;
 
     this.insideLValue.push(false);
-    yield * this.printExpr(value);
+    yield* this.printExpr(value);
     this.insideLValue.pop();
 
     if (/\d/.test(field.text[0])) {
@@ -345,10 +345,10 @@ export class Printer {
   *printTypeIdent(ident: SyntaxNode): Code {
     switch (ident.type) {
       case "type_identifier":
-        yield * this.printIdent(ident);
+        yield* this.printIdent(ident);
         break;
       case "generic_type":
-        yield * this.printTypeIdent(ident.childForFieldName("type")!);
+        yield* this.printTypeIdent(ident.childForFieldName("type")!);
         break;
       default:
         throw new Error(`Not implemented: ${ident.type}`);
@@ -359,7 +359,7 @@ export class Printer {
     const type = impl.childForFieldName("type")!;
     const body = impl.childForFieldName("body")!;
     for (const decl of body.namedChildren) {
-      yield * this.printTypeIdent(type);
+      yield* this.printTypeIdent(type);
 
       const isStatic
         = decl.childForFieldName("parameters")!.namedChildren[0]?.type
@@ -371,11 +371,11 @@ export class Printer {
       yield [".", type.endPosition];
 
       const name = decl.childForFieldName("name")!;
-      yield * this.printIdent(name);
+      yield* this.printIdent(name);
 
       yield [" = ", name.endPosition];
 
-      yield * this.printItemFn(decl, false);
+      yield* this.printItemFn(decl, false);
 
       yield ["\n", decl.endPosition];
     }
@@ -390,7 +390,7 @@ export class Printer {
           break;
         case "field_initializer":
           yield [`["${field.childForFieldName("field")!.text}"]:`, field.startPosition];
-          yield * this.printExpr(field.childForFieldName("value")!);
+          yield* this.printExpr(field.childForFieldName("value")!);
           yield [",", field.endPosition];
           break;
         default:
@@ -406,16 +406,16 @@ export class Printer {
     }
     yield ["function ", enm.startPosition];
     const name = enm.childForFieldName("name")!;
-    yield * this.printIdent(name);
+    yield* this.printIdent(name);
     yield ["() {}\n", name.endPosition];
 
     const body = enm.childForFieldName("body")!;
     for (const variant of body.namedChildren) {
-      yield * this.printIdent(name);
+      yield* this.printIdent(name);
       yield [".", name.endPosition];
 
       const variantName = variant.childForFieldName("name")!;
-      yield * this.printIdent(variantName);
+      yield* this.printIdent(variantName);
 
       yield [" = ", variantName.endPosition];
 
@@ -433,7 +433,7 @@ export class Printer {
       yield ["export ", struct.startPosition];
     }
     yield ["function ", struct.startPosition];
-    yield * this.printIdent(struct.childForFieldName("name")!);
+    yield* this.printIdent(struct.childForFieldName("name")!);
     yield ["() {}", struct.endPosition];
   }
 
@@ -443,13 +443,13 @@ export class Printer {
       if (this.isInsideLValue) {
         yield ["(", unary.startPosition];
         this.insideLValue.push(false);
-        yield * this.printExpr(unary.children[1]);
+        yield* this.printExpr(unary.children[1]);
         this.insideLValue.pop();
         yield [")[_r.REF_TARGET]", unary.endPosition];
       }
       else {
         yield ["_r.deref(", unary.startPosition];
-        yield * this.printExpr(unary.children[1]);
+        yield* this.printExpr(unary.children[1]);
         yield [")", unary.endPosition];
       }
     }
@@ -463,21 +463,21 @@ export class Printer {
     const right = assignment.childForFieldName("right")!;
     yield ["(", assignment.startPosition];
     this.insideLValue.push(true);
-    yield * this.printExpr(left);
+    yield* this.printExpr(left);
     this.insideLValue.pop();
     yield [" = ", assignment.startPosition];
-    yield * this.printExpr(right);
+    yield* this.printExpr(right);
     yield [")", assignment.endPosition];
   }
 
   *printCall(call: SyntaxNode): Code {
     const fn = call.childForFieldName("function")!;
     yield ["(", call.startPosition];
-    yield * this.printExpr(fn);
+    yield* this.printExpr(fn);
     yield [")(", fn.endPosition];
     const args = call.childForFieldName("arguments")!;
     for (const arg of args.namedChildren) {
-      yield * this.printExpr(arg);
+      yield* this.printExpr(arg);
       yield [",", arg.endPosition];
     }
     yield [")", call.endPosition];
@@ -489,13 +489,13 @@ export class Printer {
 
     if (isMut) {
       yield ["_r.ref(", ref.startPosition];
-      yield * this.printExpr(value);
+      yield* this.printExpr(value);
       yield [", v => (", value.endPosition];
-      yield * this.printExpr(value);
+      yield* this.printExpr(value);
       yield [") = v)", ref.endPosition];
     }
     else {
-      yield * this.printExpr(value);
+      yield* this.printExpr(value);
     }
   }
 
@@ -506,14 +506,14 @@ export class Printer {
         yield [".", child.startPosition];
       }
       first = false;
-      yield * this.printIdent(child);
+      yield* this.printIdent(child);
     }
   }
 
   *printMatch(match: SyntaxNode): Code {
     const value = match.childForFieldName("value")!;
     yield ["_m0 = ", match.startPosition];
-    yield * this.printExpr(value);
+    yield* this.printExpr(value);
     yield [";\n", value.endPosition];
 
     const body = match.childForFieldName("body")!;
@@ -527,7 +527,7 @@ export class Printer {
 
         this.matchDepth = 0;
         this.matchIdentifiers = [];
-        yield * this.as_matcher_printer().printPatMatcher(pattern, "_m0");
+        yield* this.as_matcher_printer().printPatMatcher(pattern, "_m0");
         yield [") {\n", pattern.endPosition];
         if (this.matchIdentifiers.length > 0) {
           yield [`var ${this.matchIdentifiers.join(",")};\n`, arm.startPosition];
@@ -538,7 +538,7 @@ export class Printer {
       }
 
       const value = arm.childForFieldName("value")!;
-      yield * this.printStmt(value);
+      yield* this.printStmt(value);
 
       yield ["}", arm.endPosition];
     }
@@ -551,12 +551,12 @@ export class Printer {
       const value = condition.childForFieldName("value")!;
 
       yield ["_m0 = ", condition.startPosition];
-      yield * this.printExpr(value);
+      yield* this.printExpr(value);
       yield [";\n", value.endPosition];
       yield ["if (", condition.startPosition];
       this.matchIdentifiers = [];
       this.matchDepth = 0;
-      yield * this.as_matcher_printer().printPatMatcher(pattern, "_m0");
+      yield* this.as_matcher_printer().printPatMatcher(pattern, "_m0");
       yield [") {\n", pattern.endPosition];
       if (this.matchIdentifiers.length > 0) {
         yield [`var ${this.matchIdentifiers.join(",")};\n`, ifExpr.startPosition];
@@ -564,24 +564,24 @@ export class Printer {
     }
     else {
       yield ["if (", condition.startPosition];
-      yield * this.printExpr(ifExpr.childForFieldName("condition")!);
+      yield* this.printExpr(ifExpr.childForFieldName("condition")!);
       yield [") {\n", condition.endPosition];
     }
 
-    yield * this.printStmt(ifExpr.childForFieldName("consequence")!);
+    yield* this.printStmt(ifExpr.childForFieldName("consequence")!);
     yield ["}", ifExpr.endPosition];
 
     const alternative = ifExpr.childForFieldName("alternative");
     if (alternative) {
       yield ["else ", alternative.startPosition];
-      yield * this.printStmt(alternative.namedChildren[0]);
+      yield* this.printStmt(alternative.namedChildren[0]);
     }
   }
 
   *printArray(array: SyntaxNode): Code {
     yield ["[", array.startPosition];
     for (const elem of array.namedChildren) {
-      yield * this.printExpr(elem);
+      yield* this.printExpr(elem);
       yield [",", elem.endPosition];
     }
     yield ["]", array.endPosition];
@@ -589,25 +589,25 @@ export class Printer {
 
   *printIndex(index: SyntaxNode): Code {
     if (index.namedChild(1)!.type.endsWith("_literal")) {
-      yield * this.printExpr(index.namedChild(0)!);
+      yield* this.printExpr(index.namedChild(0)!);
       yield "[";
-      yield * this.printExpr(index.namedChild(1)!);
+      yield* this.printExpr(index.namedChild(1)!);
       yield "]";
     }
     else {
       yield ["_r.index(", index.startPosition];
-      yield * this.printExpr(index.namedChild(0)!);
+      yield* this.printExpr(index.namedChild(0)!);
       yield [",", index.endPosition];
-      yield * this.printExpr(index.namedChild(1)!);
+      yield* this.printExpr(index.namedChild(1)!);
       yield [")", index.endPosition];
     }
   }
 
   *printRange(range: SyntaxNode): Code {
     yield ["_r.range(", range.startPosition];
-    yield * this.printExpr(range.child(0)!);
+    yield* this.printExpr(range.child(0)!);
     yield [",", range.endPosition];
-    yield * this.printExpr(range.child(2)!);
+    yield* this.printExpr(range.child(2)!);
     if (range.child(1)!.type === "..=") {
       yield ["+1", range.endPosition];
     }
@@ -617,7 +617,7 @@ export class Printer {
   *printUse(use: SyntaxNode): Code {
     this.reexportsNamed = [];
     this.reexportsAll = [];
-    yield * this.printUseItem(use.childForFieldName("argument")!);
+    yield* this.printUseItem(use.childForFieldName("argument")!);
     if (use.namedChildren[0]?.type === "visibility_modifier") {
       if (this.reexportsNamed.length) {
         yield ["export {", use.startPosition];
@@ -660,11 +660,11 @@ export class Printer {
               named.push([original.text, alias]);
             }
             else {
-              yield * this.printUseItem(original, path, alias);
+              yield* this.printUseItem(original, path, alias);
             }
           }
           else {
-            yield * this.printUseItem(child, path);
+            yield* this.printUseItem(child, path);
           }
         }
         if (wildcard) {
@@ -697,7 +697,7 @@ export class Printer {
       }
       case "use_as_clause": {
         const original = item.namedChildren[0];
-        yield * this.printUseItem(original, "", alias);
+        yield* this.printUseItem(original, "", alias);
         break;
       }
       case "use_wildcard": {
