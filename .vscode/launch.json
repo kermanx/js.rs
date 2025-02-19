@@ -1,0 +1,30 @@
+// A launch configuration that compiles the extension and then opens it inside a new window
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Client",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "autoAttachChildProcesses": true,
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/packages/vscode",
+        "--folder-uri=${workspaceRoot}/playground"
+      ],
+      "outFiles": [
+        "${workspaceRoot}/packages/vscode/dist/*.cjs"
+      ]
+    },
+    {
+      "name": "Attach to Server",
+      "type": "node",
+      "request": "attach",
+      "port": 6009,
+      "restart": true,
+      "outFiles": [
+        "${workspaceRoot}/packages/vscode/dist/*.cjs"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@jsrs/language-server",
+  "type": "module",
+  "dependencies": {
+    "@volar/language-core": "^2.4.11",
+    "@volar/language-server": "^2.4.11",
+    "@volar/language-service": "^2.4.11",
+    "@volar/typescript": "^2.4.11",
+    "volar-service-typescript": "^0.0.62",
+    "vscode-uri": "^3.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
