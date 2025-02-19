@@ -6,7 +6,7 @@ export class Printer {
   *printFile(file: SyntaxNode): Code {
     yield "import * as _r from \"@jsrs/runtime\";\n";
     for (const item of file.children) {
-      yield * this.printItem(item);
+      yield * this.printStmt(item);
     }
     yield "var _m";
     for (let i = 0; i < this.maxMatchDepth; i++) {
@@ -14,31 +14,6 @@ export class Printer {
       yield `_m${i}`;
     }
     yield ";\n";
-  }
-
-  *printItem(item: SyntaxNode): Code {
-    switch (item.type) {
-      case "function_item":
-        yield * this.printItemFn(item);
-        break;
-      case "enum_item":
-        yield * this.printItemEnum(item);
-        break;
-      case "struct_item":
-        yield * this.printItemStruct(item);
-        break;
-      case "impl_item":
-        yield * this.printItemImpl(item);
-        break;
-      case "line_comment":
-        break;
-      case "use_declaration":
-        yield * this.printUse(item);
-        break;
-      default:
-        throw new Error(`Not implemented: ${item.type}`);
-    }
-    yield "\n";
   }
 
   *printItemFn(fn: SyntaxNode, isDeclaration = true, isClosure = false): Code {
@@ -173,29 +148,46 @@ export class Printer {
     yield ["\n}", block.endPosition];
   }
 
-  *printStmt(stmt: SyntaxNode): Code {
-    switch (stmt.type) {
+  *printStmt(node: SyntaxNode): Code {
+    switch (node.type) {
+      case "function_item":
+        yield * this.printItemFn(node);
+        break;
+      case "enum_item":
+        yield * this.printItemEnum(node);
+        break;
+      case "struct_item":
+        yield * this.printItemStruct(node);
+        break;
+      case "impl_item":
+        yield * this.printItemImpl(node);
+        break;
+      case "line_comment":
+        break;
+      case "use_declaration":
+        yield * this.printUse(node);
+        break;
       case "expression_statement":
-        yield * this.printStmt(stmt.namedChildren[0]);
+        yield * this.printStmt(node.namedChildren[0]);
         break;
       case "let_declaration":
-        yield * this.printLocal(stmt);
+        yield * this.printLocal(node);
         break;
       case "match_expression":
-        yield * this.printMatch(stmt);
+        yield * this.printMatch(node);
         break;
       case "block":
-        yield * this.printBlock(stmt);
+        yield * this.printBlock(node);
         break;
       case "if_expression":
-        yield * this.printIf(stmt);
+        yield * this.printIf(node);
         break;
       case "empty_statement":
         break;
       default:
-        yield * this.printExpr(stmt);
+        yield * this.printExpr(node);
     }
-    yield [";\n", stmt.endPosition];
+    yield [";\n", node.endPosition];
   }
 
   *printLocal(local: SyntaxNode): Code {

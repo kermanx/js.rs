@@ -4,19 +4,15 @@ import { y1, y2 } from "@/x/x/y";
 import * as t from "@/x/z";
 import { t as h } from "@/x";
 export { y, y1, y2, t, h };
-
 import { x } from "t";
 export { x };
-
 export * from "s";
-
 export function add(a, b) {
   return a + b;
 }
 export function Option() {}
 Option.Some = _r.variant(/*Some*/ 0);
 Option.None = _r.unitVariant(/*None*/ 1);
-
 export function match_test(a) {
   _m0 = _r.destruct(a);
   if (
@@ -46,7 +42,6 @@ A.new = function (a, b) {
 A.prototype.add = function () {
   return this.a + this.b;
 };
-
 function swap(a, b) {
   var a =
     effect1() +
@@ -131,4 +126,5 @@ export function closures(x) {
   };
   var t = (x) => this.value + 1;
 }
+var allowed_in_js = 1;
 var _m, _m0, _m1, _m2;
