@@ -1,7 +1,9 @@
 import type { CodeMapping, VirtualCode } from "@volar/language-core";
 import Parser, { Language } from "tree-sitter";
-import Rust from "tree-sitter-rust";
+import _Rust from "tree-sitter-rust";
 import type ts from "typescript";
+
+const Rust: Language = typeof _Rust === "string" ? require(_Rust) : _Rust;
 
 let parser: Parser | undefined;
 
@@ -11,25 +13,25 @@ export class JsrsVirtualCode implements VirtualCode {
   embeddedCodes: VirtualCode[] = [];
   mappings: CodeMapping[];
 
-  constructor(
-    public snapshot: ts.IScriptSnapshot
-  ) {
-    this.mappings = [{
-      sourceOffsets: [0],
-      generatedOffsets: [0],
-      lengths: [snapshot.getLength()],
-      data: {
-        completion: true,
-        format: true,
-        navigation: true,
-        semantic: true,
-        structure: true,
-        verification: true
-      }
-    }];
+  constructor(public snapshot: ts.IScriptSnapshot) {
+    this.mappings = [
+      {
+        sourceOffsets: [0],
+        generatedOffsets: [0],
+        lengths: [snapshot.getLength()],
+        data: {
+          completion: true,
+          format: true,
+          navigation: true,
+          semantic: true,
+          structure: true,
+          verification: true,
+        },
+      },
+    ];
 
     parser ??= new Parser();
-    parser.setLanguage(Rust as unknown as Language);
+    parser.setLanguage(Rust);
 
     const content = snapshot.getText(0, snapshot.getLength());
     const tree = parser.parse(content);
