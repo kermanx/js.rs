@@ -6,6 +6,8 @@
     "@volar/language-server": "^2.4.11",
     "@volar/language-service": "^2.4.11",
     "@volar/typescript": "^2.4.11",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-rust": "^0.23.2",
     "volar-service-typescript": "^0.0.62",
     "vscode-uri": "^3.1.0"
   },

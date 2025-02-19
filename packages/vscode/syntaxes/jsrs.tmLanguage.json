@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "JSRS",
+  "scopeName": "source.jsrs",
+  "patterns": [
+    {
+      "include": "source.rust"
+    }
+  ]
+}

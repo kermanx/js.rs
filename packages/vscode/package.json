@@ -1,10 +1,14 @@
 {
   "name": "@jsrs/vscode",
   "type": "module",
+  "version": "0.0.0",
   "main": "./dist/client.cjs",
   "engines": {
     "vscode": "^1.95.0"
   },
+  "activationEvents": [
+    "onLanguage:jsrs"
+  ],
   "contributes": {
     "languages": [
       {
@@ -15,6 +19,13 @@
         "extensions": [
           ".jsrs"
         ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "jsrs",
+        "scopeName": "source.jsrs",
+        "path": "./syntaxes/jsrs.tmLanguage.json"
       }
     ],
     "configuration": {
