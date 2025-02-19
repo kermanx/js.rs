@@ -285,6 +285,11 @@ export class Printer {
       case "closure_expression":
         yield * this.printItemFn(expr, false, true);
         break;
+      case "parenthesized_expression":
+        yield "(";
+        yield * this.printExpr(expr.namedChildren[0]);
+        yield ")";
+        break;
 
       case "expression_statement":
       case "match_expression":
@@ -322,11 +327,9 @@ export class Printer {
     const value = expr.childForFieldName("value")!;
     const field = expr.childForFieldName("field")!;
 
-    yield ["(", value.startPosition];
     this.insideLValue.push(false);
     yield * this.printExpr(value);
     this.insideLValue.pop();
-    yield [")", value.endPosition];
 
     if (/\d/.test(field.text[0])) {
       yield ["[", field.startPosition];
@@ -586,11 +589,10 @@ export class Printer {
 
   *printIndex(index: SyntaxNode): Code {
     if (index.namedChild(1)!.type.endsWith("_literal")) {
-      yield ["(", index.startPosition];
       yield * this.printExpr(index.namedChild(0)!);
-      yield [")[", index.endPosition];
+      yield "[";
       yield * this.printExpr(index.namedChild(1)!);
-      yield ["]", index.endPosition];
+      yield "]";
     }
     else {
       yield ["_r.index(", index.startPosition];
