@@ -15,15 +15,15 @@
       }
     }
   },
-  "dependencies": {
-    "@jsrs/parser": "workspace:*",
-    "vlq": "^2.0.4"
-  },
   "scripts": {
     "test": "vitest",
     "build": "tsup",
     "dev": "tsup --watch src",
     "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@jsrs/parser": "workspace:*",
+    "vlq": "^2.0.4"
   },
   "vitest": {
     "include": [
@@ -31,6 +31,7 @@
     ]
   },
   "devDependencies": {
+    "@types/babel__core": "^7.20.5",
     "tsup": "^8.3.6"
   }
 }

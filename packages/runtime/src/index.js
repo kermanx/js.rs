@@ -12,7 +12,7 @@ export function unitVariant(discriminant) {
   return {
     __proto__: this.prototype,
     [DISCRIMINANT_KEY]: discriminant,
-    data,
+    data: null,
   };
 }
 
@@ -29,7 +29,8 @@ export const REF_TARGET = Symbol("Ref Target");
 /** @type {ProxyHandler} */
 const refProxyHandler = {
   get({ v }, prop) {
-    if (prop === REF_TARGET) return v;
+    if (prop === REF_TARGET)
+      return v;
     return Reflect.get(v, prop);
   },
   set(target, prop, value) {
@@ -41,11 +42,12 @@ const refProxyHandler = {
     return Reflect.set(target.v, prop, value);
   },
   has({ v }, prop) {
-    if (prop === REF_TARGET) return true;
+    if (prop === REF_TARGET)
+      return true;
     return Reflect.has(v, prop);
   },
-  apply({ v }, this, args) {
-    return Reflect.apply(v, this, args);
+  apply({ v }, thisArg, args) {
+    return Reflect.apply(v, thisArg, args);
   },
   construct({ v }, args) {
     return Reflect.construct(v, args);
@@ -76,7 +78,7 @@ const refProxyHandler = {
   },
 };
 
-export function refMut(v, s) {
+export function ref(v, s) {
   return new Proxy({ v, s }, refProxyHandler);
 }
 
@@ -87,9 +89,9 @@ export function deref(v) {
 /** @type {ProxyHandler} */
 const destructRefProxyHandler = {
   get(r, prop) {
-    return ref(() => r[prop], (v) => r[prop] = v);
+    return ref(() => r[prop], v => r[prop] = v);
   },
-}
+};
 
 export function destruct(v) {
   return REF_TARGET in v ? new Proxy(v, destructRefProxyHandler) : v;
@@ -102,13 +104,14 @@ export function range(start, end) {
     [IS_RANGE]: true,
     start,
     end,
-  }
+  };
 }
 
 export function index(target, index) {
   if (index[IS_RANGE]) {
     return target.slice(index.start, index.end);
-  } else {
+  }
+  else {
     return target[index];
   }
 }

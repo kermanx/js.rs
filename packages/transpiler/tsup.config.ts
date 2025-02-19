@@ -1,12 +1,12 @@
-import type { Options } from 'tsup'
+import type { Options } from "tsup";
 
 export default <Options>{
   entry: [
-    'src/*.ts',
+    "src/*.ts",
   ],
   clean: true,
-  format: ['esm'],
+  format: ["esm"],
   dts: true,
   cjsInterop: true,
   splitting: true,
-}
+};

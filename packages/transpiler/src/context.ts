@@ -1,7 +1,7 @@
+import type { Segment } from "./sourcemap";
+import type { Options } from "./types";
 import { MatcherPrinter } from "./matcher";
 import { Printer } from "./nodes";
-import { Segment } from "./sourcemap";
-import { Options } from "./types";
 
 export type Code = Generator<Segment, void, void>;
 
@@ -27,6 +27,7 @@ export class Context {
   get matchDepth() {
     return this._matchDepth;
   }
+
   set matchDepth(value: number) {
     this._matchDepth = value;
     this.maxMatchDepth = Math.max(this.maxMatchDepth, value);
@@ -48,6 +49,7 @@ export class Context {
   as_printer(): Printer {
     return this as any as Printer;
   }
+
   as_matcher_printer(): MatcherPrinter {
     return this as any as MatcherPrinter;
   }
@@ -55,9 +57,9 @@ export class Context {
 
 Object.defineProperties(
   Context.prototype,
-  Object.getOwnPropertyDescriptors(Printer.prototype)
+  Object.getOwnPropertyDescriptors(Printer.prototype),
 );
 Object.defineProperties(
   Context.prototype,
-  Object.getOwnPropertyDescriptors(MatcherPrinter.prototype)
+  Object.getOwnPropertyDescriptors(MatcherPrinter.prototype),
 );

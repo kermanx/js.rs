@@ -1,12 +1,13 @@
-import { describe, test } from "vitest";
-import { transpile } from "../src";
-import { fileURLToPath } from "node:url";
-import prettier from "prettier";
 import { basename } from "node:path";
+import { fileURLToPath } from "node:url";
+import { transformSync } from "@babel/core";
+import prettier from "prettier";
+import { describe, it } from "vitest";
+import { transpile } from "../src";
 import babelPlugin from "./babel-plugin";
 
 describe("transpiler", () => {
-  test("fixtures", async ({ expect }) => {
+  it("fixtures", async ({ expect }) => {
     // @ts-expect-error
     const fixtures = import.meta.glob("./fixtures/*.jsrs", {
       eager: true,
@@ -17,31 +18,34 @@ describe("transpiler", () => {
       const name = basename(path, ".jsrs");
       let result = transpile(source).code;
 
+      let prettified: string;
       try {
-        var prettified = await prettier.format(result, {
+        prettified = await prettier.format(result, {
           parser: "babel",
         });
-      } catch (e) {
+      }
+      catch (e) {
         console.log(result);
         throw e;
       }
       await expect(prettified).toMatchFileSnapshot(
-        `${snapshotsDir}/${name}.do.js`
+        `${snapshotsDir}/${name}.do.js`,
       );
 
       try {
-        result = require("@babel/core").transformSync(result, {
+        result = transformSync(result, {
           plugins: [babelPlugin],
-        }).code;
-        var prettified = await prettier.format(result, {
+        })!.code!;
+        prettified = await prettier.format(result, {
           parser: "babel",
         });
-      } catch (e) {
+      }
+      catch (e) {
         console.log(result);
         throw e;
       }
       await expect(prettified).toMatchFileSnapshot(
-        `${snapshotsDir}/${name}.js`
+        `${snapshotsDir}/${name}.js`,
       );
     }
   });

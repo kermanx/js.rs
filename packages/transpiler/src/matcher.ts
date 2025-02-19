@@ -1,5 +1,5 @@
-import { SyntaxNode } from "tree-sitter";
-import { Code, Context } from "./context";
+import type { SyntaxNode } from "tree-sitter";
+import type { Code, Context } from "./context";
 
 export declare interface MatcherPrinter extends Context {}
 export class MatcherPrinter {
@@ -33,7 +33,7 @@ export class MatcherPrinter {
         yield* this.printSlicePatternMatcher(pat, target);
         break;
       default:
-        throw new Error("Not implemented: " + pat.type);
+        throw new Error(`Not implemented: ${pat.type}`);
     }
     this.matchDepth--;
   }
@@ -46,7 +46,7 @@ export class MatcherPrinter {
       yield `&&`;
       yield* this.printPatMatcher(
         pat.namedChildren[i],
-        `_m${this.matchDepth}[${i}]`
+        `_m${this.matchDepth}[${i}]`,
       );
     }
 
@@ -76,7 +76,8 @@ export class MatcherPrinter {
           throw new Error("Multiple ellipsis in slice pattern");
         }
         hasEllipsis = true;
-      } else {
+      }
+      else {
         elements.push([hasEllipsis, child]);
       }
     }
@@ -91,7 +92,7 @@ export class MatcherPrinter {
         element,
         byEnd
           ? `_m${this.matchDepth}.at(${i - elements.length})`
-          : `_m${this.matchDepth}[${i}]`
+          : `_m${this.matchDepth}[${i}]`,
       );
     }
 

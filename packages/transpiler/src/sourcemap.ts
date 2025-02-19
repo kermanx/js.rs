@@ -4,10 +4,9 @@ import { encode } from "vlq";
 
 export type Segment = string | [string, Point];
 
-export function generateMap(segments: Iterable<Segment>, source: string) {
+export function generateMap(segments: Iterable<Segment>) {
   let code = "";
   let mappings = "";
-  let genLine = 0;
   let genColumn = 0;
   let lastGenColumn: number | null = null;
   let lastSrcLine = 0;
@@ -39,10 +38,10 @@ export function generateMap(segments: Iterable<Segment>, source: string) {
 
     if (newGenLines > 0) {
       mappings += ";".repeat(newGenLines);
-      genLine += newGenLines;
       genColumn = lines[lines.length - 1].length;
       lastGenColumn = null;
-    } else {
+    }
+    else {
       genColumn += s.length;
     }
   }

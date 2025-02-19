@@ -1,6 +1,6 @@
+import type { Options } from "./types";
 import { parse } from "@jsrs/parser";
 import { Context } from "./context";
-import { Options } from "./types";
 import { generateMap } from "./sourcemap";
 
 export function transpile(source: string, options?: Options): {

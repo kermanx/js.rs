@@ -1,5 +1,6 @@
 {
   "files.associations": {
     "*.jsrs": "rust"
-  }
+  },
+  "prettier.enable": false
 }
