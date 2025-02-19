@@ -1,9 +1,15 @@
 import { MatcherPrinter } from "./matcher";
 import { Printer } from "./nodes";
+import { Options } from "./types";
 
 export type Code = Generator<string, void, void>;
 
 export class Context {
+  constructor(options: Options = {}) {
+    this.options = options;
+  }
+
+  options: Options;
   discriminants = new Map<string, number>();
   blockPostCbs: Array<Array<(this: this) => Code>> = [[]];
   matchIdentifiers: string[] = [];
