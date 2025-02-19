@@ -1,0 +1,21 @@
+diff --git a/dist/index.js b/dist/index.js
+index b9c759a216cbede723c3fb7164e47fdc167c7360..deb000615d0a2509988b8fdce89c6ba32d88bbc6 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -680,7 +680,15 @@ var _sourcemap = require('source-map');
+ 
+ var outputFile = async (filepath, data, options) => {
+   await _fs2.default.promises.mkdir(_path2.default.dirname(filepath), { recursive: true });
+-  await _fs2.default.promises.writeFile(filepath, data, options);
++  try {
++    await _fs2.default.promises.writeFile(filepath, data, options);
++  }
++  catch (err) {
++    if (typeof filepath === "string" && filepath.endsWith(".node")) {
++      return;
++    }
++    throw err;
++  }
+ };
+ function copyDirSync(srcDir, destDir) {
+   if (!_fs2.default.existsSync(srcDir)) return;

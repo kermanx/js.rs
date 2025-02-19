@@ -2,6 +2,8 @@ import type { CodeMapping, VirtualCode } from "@volar/language-core";
 import Parser, { Language } from "tree-sitter";
 import _Rust from "tree-sitter-rust";
 import type ts from "typescript";
+import { resolveCodes } from "./utils/resolveCodes";
+import { generateRoot } from "./codegen/generateRoot";
 
 const Rust: Language = typeof _Rust === "string" ? require(_Rust) : _Rust;
 
@@ -35,6 +37,9 @@ export class JsrsVirtualCode implements VirtualCode {
 
     const content = snapshot.getText(0, snapshot.getLength());
     const tree = parser.parse(content);
-    tree;
+
+    this.embeddedCodes = [
+      resolveCodes("jsrs", "typescript", generateRoot(tree.rootNode))
+    ];
   }
 }
