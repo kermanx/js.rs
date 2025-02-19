@@ -14,5 +14,10 @@
     "prettier": "^3.5.1",
     "vitest": "^3.0.5"
   },
-  "packageManager": "pnpm@9.15.4"
+  "packageManager": "pnpm@9.15.4",
+  "pnpm": {
+    "patchedDependencies": {
+      "tree-sitter": "patches/tree-sitter.patch"
+    }
+  }
 }

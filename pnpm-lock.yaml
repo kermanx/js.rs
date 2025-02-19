@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  tree-sitter:
+    hash: qd6qjub65wutmnbm7jtc75d2lm
+    path: patches/tree-sitter.patch
+
 importers:
 
   .:
@@ -46,10 +51,10 @@ importers:
         version: 2.4.11
       tree-sitter:
         specifier: ^0.22.4
-        version: 0.22.4
+        version: 0.22.4(patch_hash=qd6qjub65wutmnbm7jtc75d2lm)
       tree-sitter-rust:
         specifier: ^0.23.2
-        version: 0.23.2(tree-sitter@0.22.4)
+        version: 0.23.2(tree-sitter@0.22.4(patch_hash=qd6qjub65wutmnbm7jtc75d2lm))
       volar-service-typescript:
         specifier: ^0.0.62
         version: 0.0.62(@volar/language-service@2.4.11)
@@ -65,10 +70,10 @@ importers:
     dependencies:
       tree-sitter:
         specifier: ^0.22.4
-        version: 0.22.4
+        version: 0.22.4(patch_hash=qd6qjub65wutmnbm7jtc75d2lm)
       tree-sitter-rust:
         specifier: ^0.23.2
-        version: 0.23.2(tree-sitter@0.22.4)
+        version: 0.23.2(tree-sitter@0.22.4(patch_hash=qd6qjub65wutmnbm7jtc75d2lm))
 
   packages/runtime: {}
 
@@ -7232,14 +7237,14 @@ snapshots:
 
   tree-kill@1.2.2: {}
 
-  tree-sitter-rust@0.23.2(tree-sitter@0.22.4):
+  tree-sitter-rust@0.23.2(tree-sitter@0.22.4(patch_hash=qd6qjub65wutmnbm7jtc75d2lm)):
     dependencies:
       node-addon-api: 8.3.0
       node-gyp-build: 4.8.4
     optionalDependencies:
-      tree-sitter: 0.22.4
+      tree-sitter: 0.22.4(patch_hash=qd6qjub65wutmnbm7jtc75d2lm)
 
-  tree-sitter@0.22.4:
+  tree-sitter@0.22.4(patch_hash=qd6qjub65wutmnbm7jtc75d2lm):
     dependencies:
       node-addon-api: 8.3.0
       node-gyp-build: 4.8.4
