@@ -16,7 +16,9 @@
     }
   },
   "dependencies": {
-    "@jsrs/parser": "workspace:*"
+    "@jridgewell/sourcemap-codec": "^1.5.0",
+    "@jsrs/parser": "workspace:*",
+    "vscode-languageserver-textdocument": "^1.0.12"
   },
   "scripts": {
     "test": "vitest",

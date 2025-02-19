@@ -1,8 +1,9 @@
 import { MatcherPrinter } from "./matcher";
 import { Printer } from "./nodes";
+import { Segment } from "./sourcemap";
 import { Options } from "./types";
 
-export type Code = Generator<string, void, void>;
+export type Code = Generator<Segment, void, void>;
 
 export class Context {
   constructor(options: Options = {}) {
