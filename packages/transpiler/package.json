@@ -1,13 +1,36 @@
 {
   "name": "@jsrs/transpiler",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
   "dependencies": {
-    "@jsrs/parser": "workspace:*"
+    "@jsrs/parser": "workspace:*",
+    "vlq": "^2.0.4"
   },
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "build": "tsup",
+    "dev": "tsup --watch src",
+    "prepublishOnly": "npm run build"
   },
   "vitest": {
-    "include": ["test/**/*.test.ts"]
+    "include": [
+      "test/**/*.test.ts"
+    ]
+  },
+  "devDependencies": {
+    "tsup": "^8.3.6"
   }
 }

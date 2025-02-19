@@ -245,6 +245,7 @@ function isTopLevelSideEffectFree(node: t.Node): boolean {
     t.isRecordExpression(node) ||
     (t.isUnaryExpression(node) &&
       node.operator !== "throw" &&
-      node.operator !== "delete")
+      node.operator !== "delete") ||
+    (t.isMemberExpression(node) && t.isIdentifier(node.property))
   );
 }

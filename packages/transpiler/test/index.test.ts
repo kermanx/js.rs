@@ -15,7 +15,7 @@ describe("transpiler", () => {
     const snapshotsDir = fileURLToPath(new URL("./snapshots", import.meta.url));
     for (const [path, { default: source }] of Object.entries(fixtures) as any) {
       const name = basename(path, ".jsrs");
-      let result = transpile(source);
+      let result = transpile(source).code;
 
       try {
         var prettified = await prettier.format(result, {

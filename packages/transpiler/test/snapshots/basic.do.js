@@ -18,7 +18,7 @@ Option.Some = _r.variant(/*Some*/ 0);
 Option.None = _r.unitVariant(/*None*/ 1);
 
 export function match_test(a) {
-  _m0 = _r.destructure(a);
+  _m0 = _r.destruct(a);
   if (
     (_m1 = _r.matches(_m0, /*A*/ 2)) &&
     (_m2 = _r.matches(_m1[1], /*B*/ 3)) &&

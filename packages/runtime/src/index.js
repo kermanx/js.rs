@@ -92,11 +92,7 @@ const destructRefProxyHandler = {
 }
 
 export function destruct(v) {
-  if (REF_TARGET in v) {
-    return new Proxy(v, destructRefProxyHandler);
-  } else {
-    return v;
-  }
+  return REF_TARGET in v ? new Proxy(v, destructRefProxyHandler) : v;
 }
 
 const IS_RANGE = Symbol("Is Range");
