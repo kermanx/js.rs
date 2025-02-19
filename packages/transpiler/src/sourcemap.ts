@@ -1,37 +1,54 @@
 import type { Point } from "tree-sitter";
-import base_1 from "./base";
+// @ts-expect-error
+import { encode } from "vlq";
 
 export type Segment = string | [string, Point];
 
-export function generateMap(segments: Iterable<Segment[]>, source: string) {
-  const mappings: number[][][] = [];
-  let newLineIndex = (0, base_1.toString)(segments).indexOf("\n");
-  while (newLineIndex >= 0) {
-    onLine((0, base_1.overwrite)(segments, [0, newLineIndex + 1]));
-    newLineIndex = (0, base_1.toString)(segments).indexOf("\n");
+export function generateMap(segments: Iterable<Segment>, source: string) {
+  let code = "";
+  let mappings = "";
+  let genLine = 0;
+  let genColumn = 0;
+  let lastGenColumn: number | null = null;
+  let lastSrcLine = 0;
+  let lastSrcColumn = 0;
+
+  for (const segment of segments) {
+    const s = typeof segment === "string" ? segment : segment[0];
+    code += s;
+
+    const lines = s.split("\n");
+    const newGenLines = lines.length - 1;
+
+    if (typeof segment !== "string") {
+      if (lastGenColumn !== null) {
+        mappings += ",";
+      }
+
+      mappings += encode([
+        genColumn - (lastGenColumn ?? 0),
+        0,
+        segment[1].row - lastSrcLine,
+        segment[1].column - lastSrcColumn,
+      ]);
+
+      lastSrcLine = segment[1].row;
+      lastSrcColumn = segment[1].column;
+      lastGenColumn = genColumn;
+    }
+
+    if (newGenLines > 0) {
+      mappings += ";".repeat(newGenLines);
+      genLine += newGenLines;
+      genColumn = lines[lines.length - 1].length;
+      lastGenColumn = null;
+    } else {
+      genColumn += s.length;
+    }
   }
-  onLine((0, base_1.overwrite)(segments, [0, (0, base_1.getLength)(segments)]));
+
   return {
+    code,
     mappings,
   };
-  function onLine(lineSegments: Segment[]) {
-    const lineMapping = [];
-    let currentColumn = 0;
-    let hasCodeMapping = false;
-    for (const s of lineSegments) {
-      if (typeof s === "string") {
-        if (hasCodeMapping) {
-          hasCodeMapping = false;
-          // we don't break off last mapping for now
-        }
-        currentColumn += s.length;
-      } else {
-        hasCodeMapping = true;
-        const { row, column } = s[1];
-        lineMapping.push([currentColumn, 0, row, column]);
-        currentColumn += s[0].length;
-      }
-    }
-    mappings.push(lineMapping);
-  }
 }
