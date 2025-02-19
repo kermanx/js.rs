@@ -6,7 +6,9 @@ fs.promises.writeFile = (path, data, options) => {
   if (typeof path === "string" && path.endsWith(".node")) {
     try {
       return writeFile(path, data, options);
-    } catch {}
+    } catch {
+      return undefined!;
+    }
   }
   return writeFile(path, data, options);
 };
@@ -16,7 +18,9 @@ fs.unlinkSync = (path) => {
   if (typeof path === "string" && path.endsWith(".node")) {
     try {
       return unlinkSync(path);
-    } catch {}
+    } catch {
+      return;
+    }
   }
   return unlinkSync(path);
 };
