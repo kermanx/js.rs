@@ -47,14 +47,14 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch ../**/*.ts"
   },
   "devDependencies": {
     "@types/vscode": "^1.97.0",
     "@volar/language-server": "^2.4.11",
     "@volar/vscode": "^2.4.11",
     "reactive-vscode": "^0.2.10",
-    "tsup": "^8.3.6",
+    "tsup": "8.3.0",
     "vscode-languageclient": "^9.0.1"
   }
 }
