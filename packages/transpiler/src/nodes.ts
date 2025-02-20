@@ -604,12 +604,15 @@ export class Printer {
   }
 
   *printRange(range: SyntaxNode): Code {
+    const [start, op, end] = range.children;
     yield ["_r.range(", range.startPosition];
-    yield* this.printExpr(range.child(0)!);
+    yield* this.printExpr(start);
     yield [",", range.endPosition];
-    yield* this.printExpr(range.child(2)!);
-    if (range.child(1)!.type === "..=") {
-      yield ["+1", range.endPosition];
+    if (end) {
+      yield* this.printExpr(end);
+      if (op.type === "..=") {
+        yield ["+1", range.endPosition];
+      }
     }
     yield [")", range.endPosition];
   }

@@ -60,7 +60,11 @@ export class MatcherPrinter {
 
   *printRangePatternMatcher(pat: SyntaxNode, target: string): Code {
     const [start, end] = pat.namedChildren;
-    yield `(${target} >= ${start.text} && ${target} <= ${end.text})`;
+    yield `(${target} >= ${start.text}`;
+    if (end) {
+      yield ` && ${target} <= ${end.text}`;
+    }
+    yield ")";
   }
 
   *printSlicePatternMatcher(pat: SyntaxNode, target: string): Code {
