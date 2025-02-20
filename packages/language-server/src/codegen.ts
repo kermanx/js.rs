@@ -19,11 +19,12 @@ export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
       break;
     case "expression_statement":
       yield* generateExpression(node.namedChildren[0]);
-      yield `;\n`;
+      yield ";";
       break;
     default:
       yield* generateExpression(node);
   }
+  yield "\n";
 }
 
 export function* generateFunctionItem(
@@ -91,12 +92,8 @@ function* generateBlock(node: Parser.SyntaxNode): Generator<Code> {
 }
 
 function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
-  if (node.namedChildren[0]?.type === "mutable_specifier") {
-    yield `let `;
-  }
-  else {
-    yield `const `;
-  }
+  const mutable = node.namedChildren[0]?.type === "mutable_specifier";
+  yield mutable ? "let " : "const ";
 
   const pattern = node.childForFieldName("pattern")!;
   yield [
