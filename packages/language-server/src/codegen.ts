@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
-import type { Code } from "../types";
-import { wrapWith } from "../utils";
-import { codeFeatures } from "../utils/codeFeatures";
+import type { Code } from "./types";
+import { wrapWith } from "./utils";
+import { codeFeatures } from "./utils/codeFeatures";
 
 export function* generateRoot(root: Parser.SyntaxNode): Generator<Code> {
   for (const node of root.children) {

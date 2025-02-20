@@ -3,7 +3,7 @@ import type { Language } from "tree-sitter";
 import type ts from "typescript";
 import Parser from "tree-sitter";
 import _Rust from "tree-sitter-rust";
-import { generateRoot } from "./codegen/generateRoot";
+import { generateRoot } from "./codegen";
 import { resolveCodes } from "./utils/resolveCodes";
 
 // eslint-disable-next-line ts/no-require-imports
