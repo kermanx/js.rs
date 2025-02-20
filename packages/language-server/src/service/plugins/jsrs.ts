@@ -1,5 +1,5 @@
 import type { Diagnostic } from "@volar/language-server/node";
-import type { LanguageServicePlugin } from "@volar/language-service";
+import type { DiagnosticSeverity, LanguageServicePlugin } from "@volar/language-service";
 import type Parser from "tree-sitter";
 import { URI } from "vscode-uri";
 import { JsrsVirtualCode } from "../../virtualCode";
@@ -23,11 +23,11 @@ export function create(): LanguageServicePlugin {
           if (!sourceScript?.generated) {
             return;
           }
-
           const root = sourceScript.generated.root;
           if (!(root instanceof JsrsVirtualCode)) {
             return;
           }
+
           const errors: Diagnostic[] = [];
 
           for (const node of collectErrorNode(root.tree.rootNode)) {
@@ -37,8 +37,8 @@ export function create(): LanguageServicePlugin {
                 start: document.positionAt(node.startIndex),
                 end: document.positionAt(node.endIndex),
               },
-              message: "Parsing error",
-              severity: 1,
+              message: "Parsing error.",
+              severity: 1 satisfies typeof DiagnosticSeverity.Error,
             });
           }
 

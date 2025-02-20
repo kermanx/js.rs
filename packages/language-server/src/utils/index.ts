@@ -1,4 +1,5 @@
 import type { CodeInformation } from "@volar/language-core";
+import type Parser from "tree-sitter";
 import type { Code } from "../types";
 
 export function wrapWith(
@@ -37,4 +38,17 @@ export function* wrapWith(
     yield code;
   }
   yield [``, end, { __combineOffset: offset }];
+}
+
+export function* between(
+  node: Parser.SyntaxNode,
+  left: Parser.SyntaxNode | null,
+  right: Parser.SyntaxNode | null,
+): Generator<Code> {
+  const start = left?.endIndex ?? node.startIndex;
+  const end = right?.startIndex ?? node.endIndex;
+  yield [
+    node.text.slice(start - node.startIndex, end - node.startIndex),
+    start,
+  ];
 }

@@ -1,25 +1,65 @@
 import type Parser from "tree-sitter";
 import type { Code } from "./types";
-import { wrapWith } from "./utils";
+import { between, wrapWith } from "./utils";
 import { codeFeatures } from "./utils/codeFeatures";
 
 export function* generateRoot(root: Parser.SyntaxNode): Generator<Code> {
-  for (const node of root.children) {
-    yield* generateStatement(node);
+  yield* generateBlock(root);
+
+  yield `
+; declare global {
+  const __JSRS_rangeSymbol: unique symbol;
+  type __JSRS_Range = { [__JSRS_rangeSymbol]: true };
+
+  function __JSRS_index<T, K extends number | __JSRS_Range>(array: T[], index: K): K extends __JSRS_Range ? number[] : number;
+  function __JSRS_range(start: number, end: number): __JSRS_Range;
+};
+
+export {};
+  `;
+}
+
+function* generateChildren(
+  node: Parser.SyntaxNode,
+  generate: (node: Parser.SyntaxNode) => Generator<Code> = generateStatement,
+): Generator<Code> {
+  let prev: Parser.SyntaxNode | null = null;
+  for (const child of node.children) {
+    yield* between(node, prev, child);
+    if (child.isNamed && child.type !== "ERROR") {
+      yield* generate(child);
+    }
+    else {
+      yield [
+        child.text,
+        child.startIndex,
+      ];
+    }
+    prev = child;
   }
+  yield* between(node, prev, null);
+}
+
+function* generateBlock(node: Parser.SyntaxNode): Generator<Code> {
+  yield* generateChildren(node, generateStatement);
 }
 
 export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "function_item":
-      yield* generateFunctionItem(node);
+      yield* generateFunction(node);
+      break;
+    case "enum_item":
+      yield* generateEnum(node);
+      break;
+    case "struct_item":
+      yield* generateStruct(node);
       break;
     case "let_declaration":
       yield* generateLocal(node);
       break;
     case "expression_statement":
       yield* generateExpression(node.namedChildren[0]);
-      yield ";";
       break;
     case "use_declaration":
       yield* generateUse(node);
@@ -27,10 +67,16 @@ export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
     default:
       yield* generateExpression(node);
   }
-  yield "\n";
+  const semi = node.children.at(-1);
+  if (semi?.type === ";") {
+    yield [
+      semi.text,
+      semi.startIndex,
+    ];
+  }
 }
 
-export function* generateFunctionItem(
+function* generateFunction(
   node: Parser.SyntaxNode,
   isDeclaration = true,
   isClosure = false,
@@ -48,23 +94,8 @@ export function* generateFunctionItem(
     }
   }
 
-  yield `(`;
-
   const parameters = node.childForFieldName("parameters")!;
-  for (const param of parameters.namedChildren) {
-    if (param.type === "self_parameter") {
-      continue;
-    }
-    else if (param.type === "parameter") {
-      yield [
-        param.text,
-        param.startIndex,
-      ];
-    }
-    yield `, `;
-  }
-
-  yield `)`;
+  yield* generateChildren(parameters, generateParameter)
 
   const type = node.childForFieldName("return_type");
   if (type) {
@@ -84,14 +115,75 @@ export function* generateFunctionItem(
   if (body.type === "block") {
     yield* generateBlock(body);
   }
+  else {
+    yield* generateExpression(body);
+  }
 }
 
-function* generateBlock(node: Parser.SyntaxNode): Generator<Code> {
-  yield `{\n`;
-  for (const statement of node.namedChildren) {
-    yield* generateStatement(statement);
+function* generateParameter(node: Parser.SyntaxNode): Generator<Code> {
+  if (node.type === "self_parameter") {
+    // TODO: codegen error
+    yield `this: unknown`;
+    return;
   }
-  yield `}`;
+
+  if (node.type === "identifier" || node.type === "type_identifier") {
+    yield* generateIdentifier(node);
+    return;
+  }
+
+  const pattern = node.childForFieldName("pattern")!;
+  const type = node.childForFieldName("type");
+
+  yield [
+    pattern.text,
+    pattern.startIndex,
+  ];
+  yield* between(node, pattern, type);
+  if (type) {
+    yield [
+      type.text,
+      type.startIndex,
+    ];
+  }
+}
+
+function* generateEnum(node: Parser.SyntaxNode): Generator<Code> {
+  // TODO:
+}
+
+function* generateStruct(node: Parser.SyntaxNode): Generator<Code> {
+  const name = node.childForFieldName("name")!;
+  const body = node.childForFieldName("body");
+
+  yield `interface __JSRS_${name.text}Constructor { new(): ${name.text}; }\n`;
+  yield `var ${name.text}!: __JSRS_${name.text}Constructor;\n`;
+  if (body) {
+    yield `interface `;
+    yield [
+      name.text,
+      name.startIndex,
+    ];
+    yield ` {\n`;
+    for (const child of body.namedChildren) {
+      if (child.type !== "field_declaration") {
+        continue;
+      }
+      const name = child.childForFieldName("name")!;
+      const type = child.childForFieldName("type")!;
+      yield [
+        name.text,
+        name.startIndex,
+      ];
+      yield `: `;
+      yield [
+        type.text,
+        type.startIndex,
+      ];
+      yield `,\n`;
+    }
+    yield `}`;
+  }
 }
 
 function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
@@ -118,18 +210,22 @@ function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
     yield ` = `;
     yield* generateExpression(value);
   }
-  yield `;`;
 }
 
 function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
   switch (node.type) {
-    case "identifier":
-      yield* generateIdentifier(node);
-      break;
     case "integer_literal":
     case "boolean_literal":
     case "string_literal":
       yield* generateLiteral(node);
+      break;
+    case "identifier":
+    case "scoped_identifier":
+      yield* generateIdentifier(node);
+      break;
+    case "array_expression":
+    case "tuple_expression":
+      yield* generateArrayExpression(node);
       break;
     case "binary_expression":
       yield* generateBinaryExpression(node);
@@ -143,8 +239,20 @@ function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
     case "call_expression":
       yield* generateCallExpression(node);
       break;
+    case "closure_expression":
+      yield* generateFunction(node, false, true);
+      break;
     case "field_expression":
       yield* generateFieldExpression(node);
+      break;
+    case "index_expression":
+      yield* generateIndexExpression(node);
+      break;
+    case "parenthesized_expression":
+      yield* generateParenthesizedExpression(node);
+      break;
+    case "range_expression":
+      yield* generateRangeExpression(node);
       break;
     case "reference_expression":
       yield* generateReferenceExpression(node);
@@ -156,18 +264,9 @@ function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
       yield* generateSelf(node);
       break;
     case "ERROR":
-      for (const child of node.children) {
-        yield* generateStatement(child);
-      }
+      yield* generateBlock(node);
       break;
   }
-}
-
-function* generateIdentifier(node: Parser.SyntaxNode): Generator<Code> {
-  yield [
-    node.text,
-    node.startIndex,
-  ];
 }
 
 function* generateLiteral(node: Parser.SyntaxNode): Generator<Code> {
@@ -177,19 +276,49 @@ function* generateLiteral(node: Parser.SyntaxNode): Generator<Code> {
   ];
 }
 
-function* generateBinaryExpression(node: Parser.SyntaxNode): Generator<Code> {
-  yield* generateExpression(node.children[0]);
-  yield ` `;
-  yield* generateBinaryOperator(node.children[1]);
-  yield ` `;
-  yield* generateExpression(node.children[2]);
+function* generateArrayExpression(node: Parser.SyntaxNode): Generator<Code> {
+  yield `[`;
+  for (const child of node.namedChildren) {
+    yield* generateExpression(child);
+    yield `, `;
+  }
+  yield `]`;
 }
 
-function* generateBinaryOperator(node: Parser.SyntaxNode): Generator<Code> {
-  yield [
-    node.text,
-    node.startIndex,
-  ];
+function* generateBinaryExpression(node: Parser.SyntaxNode): Generator<Code> {
+  const left = node.children[0];
+  const right = node.children[2];
+
+  yield* generateExpression(left);
+  yield* between(node, left, right);
+  yield* generateExpression(right);
+}
+
+function* generateIdentifier(node: Parser.SyntaxNode): Generator<Code> {
+  switch (node.type) {
+    case "identifier":
+    case "field_identifier":
+    case "type_identifier":
+      yield [
+        node.text,
+        node.startIndex,
+      ];
+      break;
+    case "scoped_identifier":
+      yield* generateScopedIdentifier(node);
+      break;
+  }
+}
+
+function* generateScopedIdentifier(node: Parser.SyntaxNode): Generator<Code> {
+  let first = true;
+  for (const child of node.namedChildren) {
+    if (!first) {
+      yield `.`;
+    }
+    first = false;
+    yield* generateIdentifier(child);
+  }
 }
 
 function* generateUnaryExpression(node: Parser.SyntaxNode): Generator<Code> {
@@ -248,9 +377,52 @@ function* generateFieldExpression(node: Parser.SyntaxNode): Generator<Code> {
     );
   }
   else {
-    yield `.`;
+    yield* between(node, value, field);
     yield* generateIdentifier(field);
   }
+}
+
+function* generateIndexExpression(node: Parser.SyntaxNode): Generator<Code> {
+  const target = node.namedChild(0)!;
+  const index = node.namedChild(1)!;
+
+  if (target.type.endsWith("_liternal")) {
+    yield* generateExpression(target);
+    yield* `[`;
+    yield* generateExpression(index);
+    yield* `]`;
+  }
+  else {
+    yield `__JSRS_index(`;
+    yield* generateExpression(target);
+    yield `, `;
+    yield* generateExpression(index);
+    yield `)`;
+  }
+}
+
+function* generateParenthesizedExpression(node: Parser.SyntaxNode): Generator<Code> {
+  const exp = node.namedChildren[0];
+
+  yield `(`;
+  yield* generateExpression(exp);
+  yield `)`;
+}
+
+function* generateRangeExpression(node: Parser.SyntaxNode): Generator<Code> {
+  const from = node.namedChild(0)!;
+  const to = node.namedChild(1);
+
+  yield `__JSRS_range(`;
+  yield* generateExpression(from);
+  yield `, `;
+  if (to) {
+    yield* generateExpression(to);
+    if (node.child(1)!.text === "..=") {
+      yield `+ 1`;
+    }
+  }
+  yield `)`;
 }
 
 function* generateReferenceExpression(_node: Parser.SyntaxNode): Generator<Code> {
@@ -258,8 +430,9 @@ function* generateReferenceExpression(_node: Parser.SyntaxNode): Generator<Code>
 }
 
 function* generateReturnExpression(node: Parser.SyntaxNode): Generator<Code> {
-  yield `return `;
   const value = node.namedChildren[0];
+
+  yield `return `;
   if (value) {
     yield* generateExpression(value);
   }
@@ -414,8 +587,6 @@ function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
         reexportsAll.push(path);
         break;
       }
-      default:
-        throw new Error(`Not implemented: ${node.type}`);
     }
 
     function getPath(path: Parser.SyntaxNode): string {
