@@ -18,6 +18,12 @@ export async function createJsrsLanguagePlugin(_params: InitializeParams): Promi
         return new JsrsVirtualCode(snapshot);
       }
     },
+    updateVirtualCode(uri, virtualCode, newSnapshot, _ctx) {
+      if (virtualCode instanceof JsrsVirtualCode) {
+        virtualCode.update(newSnapshot);
+        return virtualCode;
+      }
+    },
     typescript: {
       extraFileExtensions: [{ extension: "jsrs", isMixedContent: true, scriptKind: 7 satisfies ts.ScriptKind.Deferred }],
       getServiceScript() {

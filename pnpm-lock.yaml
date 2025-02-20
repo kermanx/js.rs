@@ -67,6 +67,9 @@ importers:
       volar-service-typescript:
         specifier: ^0.0.62
         version: 0.0.62(@volar/language-service@2.4.11)
+      vscode-languageserver-textdocument:
+        specifier: ^1.0.12
+        version: 1.0.12
       vscode-uri:
         specifier: ^3.1.0
         version: 3.1.0
