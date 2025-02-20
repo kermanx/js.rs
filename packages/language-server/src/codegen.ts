@@ -431,7 +431,7 @@ function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
         return `@`;
       }
       else {
-        return ""
+        return "";
       }
     }
 
@@ -446,7 +446,7 @@ function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
         return "crate";
       }
       else {
-        return ""
+        return "";
       }
     }
   }
