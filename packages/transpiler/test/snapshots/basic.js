@@ -80,7 +80,7 @@ export function is_alpha(c) {
     _m0 = c;
     if (_m0 === "x") {
       {
-        console.log('"x"');
+        console.log("x");
         _do3 = true;
       }
     } else if ((_m0 >= "a" && _m0 <= "z") || (_m0 >= "A" && _m0 <= "Z")) {
@@ -109,7 +109,7 @@ export function array() {
     var a, b;
     log(a, b);
   } else {
-    log('"other"');
+    log("other");
   }
 }
 export function tuple() {
@@ -121,7 +121,7 @@ export function tuple() {
     var a;
     log(a);
   } else {
-    log('"other"');
+    log("other");
   }
 }
 export function structs(x) {

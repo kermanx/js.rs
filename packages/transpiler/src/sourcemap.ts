@@ -1,8 +1,8 @@
-import type { Point } from "tree-sitter";
+import type { Point, SyntaxNode } from "tree-sitter";
 // @ts-expect-error
 import { encode } from "vlq";
 
-export type Segment = string | [string, Point];
+export type Segment = string | [string, Point] | SyntaxNode;
 
 export function generateMap(segments: Iterable<Segment>) {
   let code = "";
@@ -12,7 +12,13 @@ export function generateMap(segments: Iterable<Segment>) {
   let lastSrcLine = 0;
   let lastSrcColumn = 0;
 
-  for (const segment of segments) {
+  for (const segmentOrNode of segments) {
+    const segment = typeof segmentOrNode === "string" || Array.isArray(segmentOrNode)
+      ? segmentOrNode
+      : [
+          segmentOrNode.text,
+          segmentOrNode.startPosition,
+        ] as const;
     const s = typeof segment === "string" ? segment : segment[0];
     code += s;
 
