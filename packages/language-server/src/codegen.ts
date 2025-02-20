@@ -468,7 +468,7 @@ function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
   }
   else {
     if (reexportsAll.length) {
-      throw new Error("Wildcard import is not supported");
+      // TODO: throw new Error("Wildcard import is not supported");
     }
   }
 
@@ -604,7 +604,7 @@ function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
         return `@`;
       }
       else {
-        throw new Error(`Not implemented: ${path.type}`);
+        return "";
       }
     }
 
@@ -619,7 +619,7 @@ function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
         return "crate";
       }
       else {
-        throw new Error(`Not implemented: ${path.type}`);
+        return "";
       }
     }
   }
