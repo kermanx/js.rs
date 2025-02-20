@@ -18,7 +18,8 @@
         ],
         "extensions": [
           ".jsrs"
-        ]
+        ],
+        "configuration": "./syntaxes/language-configuration.json"
       }
     ],
     "grammars": [
