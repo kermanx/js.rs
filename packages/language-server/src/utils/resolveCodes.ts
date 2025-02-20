@@ -1,17 +1,24 @@
 import type { CodeMapping, IScriptSnapshot } from "@volar/language-core";
 import type { Code } from "../types";
+import { UserError } from "../types";
 import { codeFeatures } from "./codeFeatures";
 
 export function resolveCodes(id: string, languageId: string, generator: Generator<Code>) {
   const mappings: CodeMapping[] = [];
 
   let text = "";
+  const errors: UserError[] = [];
   for (const code of generator) {
-    if (typeof code === "string") {
+    if (code instanceof UserError) {
+      errors.push(code);
+    }
+    else if (typeof code === "string") {
       text += code;
     }
     else {
-      const [source, offset, features] = code;
+      const [source, offset, features] = Array.isArray(code)
+        ? code
+        : [code.text, code.startIndex];
       const mapping: CodeMapping = {
         sourceOffsets: [offset],
         generatedOffsets: [text.length],
@@ -50,5 +57,6 @@ export function resolveCodes(id: string, languageId: string, generator: Generato
     languageId,
     snapshot,
     mappings: newMappings,
+    errors,
   };
 }
