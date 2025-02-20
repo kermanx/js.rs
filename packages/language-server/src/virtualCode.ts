@@ -16,6 +16,7 @@ export class JsrsVirtualCode implements VirtualCode {
   languageId = "jsrs";
   embeddedCodes: VirtualCode[] = [];
   mappings: CodeMapping[];
+  tree: Parser.Tree;
 
   constructor(public snapshot: ts.IScriptSnapshot) {
     this.mappings = [
@@ -38,10 +39,10 @@ export class JsrsVirtualCode implements VirtualCode {
     parser.setLanguage(Rust);
 
     const content = snapshot.getText(0, snapshot.getLength());
-    const tree = parser.parse(content);
+    this.tree = parser.parse(content);
 
     this.embeddedCodes = [
-      resolveCodes("jsrs", "typescript", generateRoot(tree.rootNode)),
+      resolveCodes("jsrs", "typescript", generateRoot(this.tree.rootNode)),
     ];
   }
 }

@@ -152,6 +152,11 @@ function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
     case "self":
       yield* generateSelf(node);
       break;
+    case "ERROR":
+      for (const child of node.children) {
+        yield* generateStatement(child);
+      }
+      break;
   }
 }
 
