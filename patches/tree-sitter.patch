@@ -1,0 +1,13 @@
+diff --git a/index.js b/index.js
+index 9a57b3652ff41b8046c89c498802f6318ee78ff1..9ef7125ff38633dea15cc5170f196e23f4f0c097 100644
+--- a/index.js
++++ b/index.js
+@@ -1,6 +1,7 @@
++const __patch = x=>(typeof x==='string'?require(x):x)
+ const binding = typeof process.versions.bun === "string" ?
+     // Statically analyzable enough for `bun build --compile` to embed the tree-sitter.node napi addon
+-    require(`./prebuilds/${process.platform}-${process.arch}/tree-sitter.node`) :
++    __patch(require(`./prebuilds/${process.platform}-${process.arch}/tree-sitter.node`)) :
+     require('node-gyp-build')(__dirname);
+ const {Query, Parser, NodeMethods, Tree, TreeCursor, LookaheadIterator} = binding;
+ 

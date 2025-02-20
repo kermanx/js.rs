@@ -1,0 +1,60 @@
+{
+  "name": "@jsrs/vscode",
+  "type": "module",
+  "version": "0.0.0",
+  "main": "./dist/client.cjs",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "activationEvents": [
+    "onLanguage:jsrs"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "jsrs",
+        "aliases": [
+          "JSRS"
+        ],
+        "extensions": [
+          ".jsrs"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "jsrs",
+        "scopeName": "source.jsrs",
+        "path": "./syntaxes/jsrs.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "JSRS",
+      "properties": {
+        "jsrs.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch ../**/*.ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.97.0",
+    "@volar/language-server": "^2.4.11",
+    "@volar/vscode": "^2.4.11",
+    "reactive-vscode": "^0.2.10",
+    "tsup": "8.3.0",
+    "vscode-languageclient": "^9.0.1"
+  }
+}

@@ -18,5 +18,11 @@
     "eslint": "^9.20.1",
     "prettier": "^3.5.1",
     "vitest": "^3.0.5"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "tree-sitter": "patches/tree-sitter.patch",
+      "tsup@8.3.0": "patches/tsup@8.3.0.patch"
+    }
   }
 }
