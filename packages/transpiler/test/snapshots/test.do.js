@@ -3,10 +3,8 @@ import { Analyzer } from "@/analyzer";
 import { AstKind2 } from "@/ast";
 import { CfScopeKind } from "@/scope";
 import { Transformer } from "@/transformer";
-
 import { IfStatement, Statement } from "oxc/ast/ast";
 import { GetSpan } from "oxc/span";
-
 Analyzer.prototype.exec_if_statement = function (node) {
   var factory = this.factory;
   var test = this.exec_expression(node.test).get_to_boolean(this);
@@ -127,7 +125,6 @@ Analyzer.prototype.exec_if_statement = function (node) {
     }
   };
 };
-
 Transformer.prototype.transform_if_statement = function (node) {
   var { span, test, consequent, alternate } = _r.destructure(node);
   var [need_test_val, maybe_consequent, maybe_alternate] = _r.destructure(
@@ -237,5 +234,4 @@ Transformer.prototype.transform_if_statement = function (node) {
     }
   };
 };
-
 var _m, _m0, _m1, _m2;

@@ -1,12 +1,12 @@
-import { SyntaxNode } from "tree-sitter";
-import { Code, Context } from "./context";
+import type { SyntaxNode } from "tree-sitter";
+import type { Code, Context } from "./context";
 
 export declare interface Printer extends Context {}
 export class Printer {
   *printFile(file: SyntaxNode): Code {
-    yield 'import * as _r from "@jsrs/runtime";\n';
+    yield "import * as _r from \"@jsrs/runtime\";\n";
     for (const item of file.children) {
-      yield* this.printItem(item);
+      yield* this.printStmt(item);
     }
     yield "var _m";
     for (let i = 0; i < this.maxMatchDepth; i++) {
@@ -14,31 +14,6 @@ export class Printer {
       yield `_m${i}`;
     }
     yield ";\n";
-  }
-
-  *printItem(item: SyntaxNode): Code {
-    switch (item.type) {
-      case "function_item":
-        yield* this.printItemFn(item);
-        break;
-      case "enum_item":
-        yield* this.printItemEnum(item);
-        break;
-      case "struct_item":
-        yield* this.printItemStruct(item);
-        break;
-      case "impl_item":
-        yield* this.printItemImpl(item);
-        break;
-      case "line_comment":
-        break;
-      case "use_declaration":
-        yield* this.printUse(item);
-        break;
-      default:
-        throw new Error("Not implemented: " + item.type);
-    }
-    yield "\n";
   }
 
   *printItemFn(fn: SyntaxNode, isDeclaration = true, isClosure = false): Code {
@@ -61,11 +36,13 @@ export class Printer {
     for (const param of parameters.namedChildren) {
       if (param.type === "self_parameter") {
         continue;
-      } else if (param.type === "parameter") {
+      }
+      else if (param.type === "parameter") {
         yield* this.printPat(param.childForFieldName("pattern")!);
-      } else if (
-        param.type === "identifier" ||
-        param.type === "type_identifier"
+      }
+      else if (
+        param.type === "identifier"
+        || param.type === "type_identifier"
       ) {
         yield* this.printIdent(param);
       }
@@ -81,7 +58,8 @@ export class Printer {
     const body = fn.childForFieldName("body")!;
     if (body.type === "block") {
       yield* this.printBlock(body, true);
-    } else {
+    }
+    else {
       yield* this.printExpr(body);
     }
   }
@@ -100,7 +78,7 @@ export class Printer {
         break;
 
       default:
-        throw new Error("Not implemented: " + pat.type);
+        throw new Error(`Not implemented: ${pat.type}`);
     }
   }
 
@@ -128,7 +106,8 @@ export class Printer {
       if (pattern) {
         yield [`"${name.text}":`, name.startPosition];
         yield* this.printPat(field.childForFieldName("pattern")!);
-      } else {
+      }
+      else {
         yield [field.text, field.startPosition];
       }
       yield [",", field.startPosition];
@@ -148,11 +127,11 @@ export class Printer {
       const child = block.namedChildren[i];
       if (i === block.namedChildren.length - 1 && implicitReturn) {
         if (
-          child.type.endsWith("_expression") ||
-          child.type.endsWith("_literal") ||
-          (child.type === "expression_statement" &&
-            (child.namedChildren[0].type === "match_expression" ||
-              child.namedChildren[0].type === "if_expression"))
+          child.type.endsWith("_expression")
+          || child.type.endsWith("_literal")
+          || (child.type === "expression_statement"
+            && (child.namedChildren[0].type === "match_expression"
+              || child.namedChildren[0].type === "if_expression"))
         ) {
           yield ["return ", child.startPosition];
           yield* this.printExpr(child);
@@ -169,29 +148,46 @@ export class Printer {
     yield ["\n}", block.endPosition];
   }
 
-  *printStmt(stmt: SyntaxNode): Code {
-    switch (stmt.type) {
+  *printStmt(node: SyntaxNode): Code {
+    switch (node.type) {
+      case "function_item":
+        yield* this.printItemFn(node);
+        break;
+      case "enum_item":
+        yield* this.printItemEnum(node);
+        break;
+      case "struct_item":
+        yield* this.printItemStruct(node);
+        break;
+      case "impl_item":
+        yield* this.printItemImpl(node);
+        break;
+      case "line_comment":
+        break;
+      case "use_declaration":
+        yield* this.printUse(node);
+        break;
       case "expression_statement":
-        yield* this.printStmt(stmt.namedChildren[0]);
+        yield* this.printStmt(node.namedChildren[0]);
         break;
       case "let_declaration":
-        yield* this.printLocal(stmt);
+        yield* this.printLocal(node);
         break;
       case "match_expression":
-        yield* this.printMatch(stmt);
+        yield* this.printMatch(node);
         break;
       case "block":
-        yield* this.printBlock(stmt);
+        yield* this.printBlock(node);
         break;
       case "if_expression":
-        yield* this.printIf(stmt);
+        yield* this.printIf(node);
         break;
       case "empty_statement":
         break;
       default:
-        yield* this.printExpr(stmt);
+        yield* this.printExpr(node);
     }
-    yield [";\n", stmt.endPosition];
+    yield [";\n", node.endPosition];
   }
 
   *printLocal(local: SyntaxNode): Code {
@@ -215,7 +211,8 @@ export class Printer {
         yield ["} else", alternative.startPosition];
         yield* this.printBlock(alternative.namedChildren[0]);
       });
-    } else {
+    }
+    else {
       yield ["var ", local.startPosition];
       yield* this.printPat(pattern);
       const value = local.childForFieldName("value");
@@ -288,6 +285,11 @@ export class Printer {
       case "closure_expression":
         yield* this.printItemFn(expr, false, true);
         break;
+      case "parenthesized_expression":
+        yield "(";
+        yield* this.printExpr(expr.namedChildren[0]);
+        yield ")";
+        break;
 
       case "expression_statement":
       case "match_expression":
@@ -298,7 +300,7 @@ export class Printer {
         yield ["})", expr.endPosition];
         break;
       default:
-        throw new Error("Not implemented: " + expr.type);
+        throw new Error(`Not implemented: ${expr.type}`);
     }
   }
 
@@ -325,17 +327,16 @@ export class Printer {
     const value = expr.childForFieldName("value")!;
     const field = expr.childForFieldName("field")!;
 
-    yield ["(", value.startPosition];
     this.insideLValue.push(false);
     yield* this.printExpr(value);
     this.insideLValue.pop();
-    yield [")", value.endPosition];
 
     if (/\d/.test(field.text[0])) {
       yield ["[", field.startPosition];
       yield [field.text, field.startPosition];
       yield ["]", field.endPosition];
-    } else {
+    }
+    else {
       yield [".", field.startPosition];
       yield [field.text, field.startPosition];
     }
@@ -350,7 +351,7 @@ export class Printer {
         yield* this.printTypeIdent(ident.childForFieldName("type")!);
         break;
       default:
-        throw new Error("Not implemented: " + ident.type);
+        throw new Error(`Not implemented: ${ident.type}`);
     }
   }
 
@@ -360,9 +361,9 @@ export class Printer {
     for (const decl of body.namedChildren) {
       yield* this.printTypeIdent(type);
 
-      const isStatic =
-        decl.childForFieldName("parameters")!.namedChildren[0]?.type !==
-        "self_parameter";
+      const isStatic
+        = decl.childForFieldName("parameters")!.namedChildren[0]?.type
+          !== "self_parameter";
       if (!isStatic) {
         yield [".prototype", type.endPosition];
       }
@@ -393,7 +394,7 @@ export class Printer {
           yield [",", field.endPosition];
           break;
         default:
-          throw new Error("Not implemented: " + field.type);
+          throw new Error(`Not implemented: ${field.type}`);
       }
     }
     yield ["})", struct.endPosition];
@@ -445,13 +446,15 @@ export class Printer {
         yield* this.printExpr(unary.children[1]);
         this.insideLValue.pop();
         yield [")[_r.REF_TARGET]", unary.endPosition];
-      } else {
+      }
+      else {
         yield ["_r.deref(", unary.startPosition];
         yield* this.printExpr(unary.children[1]);
         yield [")", unary.endPosition];
       }
-    } else {
-      throw new Error("Not implemented: " + op);
+    }
+    else {
+      throw new Error(`Not implemented: ${op}`);
     }
   }
 
@@ -490,7 +493,8 @@ export class Printer {
       yield [", v => (", value.endPosition];
       yield* this.printExpr(value);
       yield [") = v)", ref.endPosition];
-    } else {
+    }
+    else {
       yield* this.printExpr(value);
     }
   }
@@ -528,7 +532,8 @@ export class Printer {
         if (this.matchIdentifiers.length > 0) {
           yield [`var ${this.matchIdentifiers.join(",")};\n`, arm.startPosition];
         }
-      } else {
+      }
+      else {
         yield ["else {\n", arm.startPosition];
       }
 
@@ -556,7 +561,8 @@ export class Printer {
       if (this.matchIdentifiers.length > 0) {
         yield [`var ${this.matchIdentifiers.join(",")};\n`, ifExpr.startPosition];
       }
-    } else {
+    }
+    else {
       yield ["if (", condition.startPosition];
       yield* this.printExpr(ifExpr.childForFieldName("condition")!);
       yield [") {\n", condition.endPosition];
@@ -583,12 +589,12 @@ export class Printer {
 
   *printIndex(index: SyntaxNode): Code {
     if (index.namedChild(1)!.type.endsWith("_literal")) {
-      yield ["(", index.startPosition];
       yield* this.printExpr(index.namedChild(0)!);
-      yield [")[", index.endPosition];
+      yield "[";
       yield* this.printExpr(index.namedChild(1)!);
-      yield ["]", index.endPosition];
-    } else {
+      yield "]";
+    }
+    else {
       yield ["_r.index(", index.startPosition];
       yield* this.printExpr(index.namedChild(0)!);
       yield [",", index.endPosition];
@@ -623,7 +629,8 @@ export class Printer {
           yield [`export * from "${path}";\n`, use.startPosition];
         }
       }
-    } else {
+    }
+    else {
       if (this.reexportsAll.length) {
         throw new Error("Wildcard import is not supported");
       }
@@ -639,19 +646,24 @@ export class Printer {
         for (const child of item.namedChildren[1].namedChildren) {
           if (child.type === "self") {
             wildcard = getSelfName(item.namedChildren[0]);
-          } else if (child.type === "identifier") {
+          }
+          else if (child.type === "identifier") {
             named.push([child.text]);
-          } else if (child.type === "use_as_clause") {
+          }
+          else if (child.type === "use_as_clause") {
             const original = child.namedChildren[0];
             const alias = child.namedChildren[1].text;
             if (original.type === "self") {
               wildcard = alias;
-            } else if (original.type === "identifier") {
+            }
+            else if (original.type === "identifier") {
               named.push([original.text, alias]);
-            } else {
+            }
+            else {
               yield* this.printUseItem(original, path, alias);
             }
-          } else {
+          }
+          else {
             yield* this.printUseItem(child, path);
           }
         }
@@ -676,7 +688,8 @@ export class Printer {
           const name = alias || getSelfName(item.namedChildren[0]);
           this.reexportsNamed.push(name);
           yield [`import * as ${name} from "${path}";\n`, item.startPosition];
-        } else {
+        }
+        else {
           this.reexportsNamed.push(alias || name);
           yield [`import { ${name}${alias ? ` as ${alias}` : ""} } from "${path}";\n`, item.startPosition];
         }
@@ -693,7 +706,7 @@ export class Printer {
         break;
       }
       default:
-        throw new Error("Not implemented: " + item.type);
+        throw new Error(`Not implemented: ${item.type}`);
     }
 
     function getPath(path: SyntaxNode): string {
@@ -703,24 +716,30 @@ export class Printer {
     function getPathImpl(path: SyntaxNode): string {
       if (path.type === "identifier") {
         return `${path.text}`;
-      } else if (path.type === "scoped_identifier") {
+      }
+      else if (path.type === "scoped_identifier") {
         return `${getPathImpl(path.namedChildren[0])}/${path.namedChildren[1].text}`;
-      } else if (path.type === "crate") {
+      }
+      else if (path.type === "crate") {
         return `@`;
-      } else {
-        throw new Error("Not implemented: " + path.type);
+      }
+      else {
+        throw new Error(`Not implemented: ${path.type}`);
       }
     }
 
     function getSelfName(path: SyntaxNode): string {
       if (path.type === "identifier") {
         return path.text;
-      } else if (path.type === "scoped_identifier") {
+      }
+      else if (path.type === "scoped_identifier") {
         return path.namedChildren[1].text;
-      } else if (path.type === "crate") {
+      }
+      else if (path.type === "crate") {
         return "crate";
-      } else {
-        throw new Error("Not implemented: " + path.type);
+      }
+      else {
+        throw new Error(`Not implemented: ${path.type}`);
       }
     }
   }

@@ -16,7 +16,7 @@ export function resolveCodes(id: string, languageId: string, generator: Generato
         sourceOffsets: [offset],
         generatedOffsets: [text.length],
         lengths: [source.length],
-        data: features ?? codeFeatures.all
+        data: features ?? codeFeatures.all,
       };
       mappings.push(mapping);
       text += source;
@@ -26,7 +26,7 @@ export function resolveCodes(id: string, languageId: string, generator: Generato
   const snapshot: IScriptSnapshot = {
     getText: (start, end) => text.slice(start, end),
     getLength: () => text.length,
-    getChangeRange: () => void 0
+    getChangeRange: () => void 0,
   };
 
   const newMappings: CodeMapping[] = [];
@@ -35,7 +35,7 @@ export function resolveCodes(id: string, languageId: string, generator: Generato
     if (mapping.data.__combineOffset !== undefined) {
       const offsetMapping = mappings[i - mapping.data.__combineOffset];
       if (typeof offsetMapping === "string" || !offsetMapping) {
-        throw new Error("Invalid offset mapping, mappings: " + mappings.length + ", i: " + i + ", offset: " + mapping.data.__combineOffset);
+        throw new Error(`Invalid offset mapping, mappings: ${mappings.length}, i: ${i}, offset: ${mapping.data.__combineOffset}`);
       }
       offsetMapping.sourceOffsets.push(...mapping.sourceOffsets);
       offsetMapping.generatedOffsets.push(...mapping.generatedOffsets);
@@ -49,6 +49,6 @@ export function resolveCodes(id: string, languageId: string, generator: Generato
     id,
     languageId,
     snapshot,
-    mappings: newMappings
+    mappings: newMappings,
   };
 }

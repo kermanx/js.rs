@@ -132,4 +132,5 @@ export function closures(x) {
   };
   var t = (x) => this.value + 1;
 }
+var allowed_in_js = 1;
 var _m, _m0, _m1, _m2;

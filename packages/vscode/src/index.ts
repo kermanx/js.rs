@@ -9,39 +9,39 @@ let client: lsp.BaseLanguageClient;
 export const { activate, deactivate } = defineExtension(async (context) => {
   const serverModule = vscode.Uri.joinPath(context.extensionUri, "dist", "server.cjs");
   const runOptions = { execArgv: <string[]>[] };
-  const debugOptions = { execArgv: ["--nolazy", "--inspect=" + 6009] };
+  const debugOptions = { execArgv: ["--nolazy", `--inspect=${6009}`] };
   const serverOptions: lsp.ServerOptions = {
     run: {
       module: serverModule.fsPath,
       transport: lsp.TransportKind.ipc,
-      options: runOptions
+      options: runOptions,
     },
     debug: {
       module: serverModule.fsPath,
       transport: lsp.TransportKind.ipc,
-      options: debugOptions
-    }
+      options: debugOptions,
+    },
   };
   const clientOptions: lsp.LanguageClientOptions = {
     documentSelector: [{
-      language: "jsrs"
+      language: "jsrs",
     }],
     initializationOptions: {
       typescript: {
-        tsdk: (await getTsdk(context))!.tsdk
-      }
-    }
+        tsdk: (await getTsdk(context))!.tsdk,
+      },
+    },
   };
   client = new lsp.LanguageClient(
-      "jsrs",
-      "jsrs",
-      serverOptions,
-      clientOptions
+    "jsrs",
+    "jsrs",
+    serverOptions,
+    clientOptions,
   );
   await client.start();
 
   onDeactivate(() => {
-      client?.stop();
+    client?.stop();
   });
 
   // support for auto close tag

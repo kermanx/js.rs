@@ -104,3 +104,5 @@ pub fn closures(x: i32) {
   };
   let t = |x| self.value + 1;
 }
+
+let allowed_in_js = 1;

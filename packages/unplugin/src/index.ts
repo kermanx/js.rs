@@ -1,11 +1,11 @@
 import type { UnpluginFactory } from "unplugin";
 import type { Options } from "./types";
+import { transpile } from "@jsrs/transpiler";
 import { createUnplugin } from "unplugin";
 import { createFilter } from "unplugin-utils";
-import { transpile } from "@jsrs/transpiler";
 
 export const unpluginFactory: UnpluginFactory<Options | undefined> = (
-  options
+  options,
 ) => {
   const transformInclude = createFilter(options?.include, options?.exclude);
   return {

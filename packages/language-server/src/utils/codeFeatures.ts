@@ -5,10 +5,10 @@ export const raw = {
     semantic: true,
     completion: true,
     navigation: true,
-    verification: true
+    verification: true,
   },
   verification: {
-    verification: true
+    verification: true,
   },
 } satisfies Record<string, CodeInformation>;
 

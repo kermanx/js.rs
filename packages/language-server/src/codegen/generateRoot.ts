@@ -29,7 +29,7 @@ export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
 export function* generateFunctionItem(
   node: Parser.SyntaxNode,
   isDeclaration = true,
-  isClosure = false
+  isClosure = false,
 ): Generator<Code> {
   if (isDeclaration && node.namedChildren[0]?.type === "visibility_modifier") {
     yield `export `;
@@ -54,7 +54,7 @@ export function* generateFunctionItem(
     else if (param.type === "parameter") {
       yield [
         param.text,
-        param.startIndex
+        param.startIndex,
       ];
     }
     yield `, `;
@@ -67,7 +67,7 @@ export function* generateFunctionItem(
     yield `: `;
     yield [
       type.text,
-      type.startIndex
+      type.startIndex,
     ];
   }
 
@@ -101,7 +101,7 @@ function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
   const pattern = node.childForFieldName("pattern")!;
   yield [
     pattern.text,
-    pattern.startIndex
+    pattern.startIndex,
   ];
 
   const type = node.childForFieldName("type")!;
@@ -109,7 +109,7 @@ function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
     yield `: `;
     yield [
       type.text,
-      type.startIndex
+      type.startIndex,
     ];
   }
 
@@ -161,14 +161,14 @@ function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
 function* generateIdentifier(node: Parser.SyntaxNode): Generator<Code> {
   yield [
     node.text,
-    node.startIndex
+    node.startIndex,
   ];
 }
 
 function* generateLiteral(node: Parser.SyntaxNode): Generator<Code> {
   yield [
     node.text,
-    node.startIndex
+    node.startIndex,
   ];
 }
 
@@ -183,7 +183,7 @@ function* generateBinaryExpression(node: Parser.SyntaxNode): Generator<Code> {
 function* generateBinaryOperator(node: Parser.SyntaxNode): Generator<Code> {
   yield [
     node.text,
-    node.startIndex
+    node.startIndex,
   ];
 }
 
@@ -240,7 +240,7 @@ function* generateFieldExpression(node: Parser.SyntaxNode): Generator<Code> {
       `[`,
       field.text,
       `]`,
-    )
+    );
   }
   else {
     yield `.`;
@@ -248,7 +248,7 @@ function* generateFieldExpression(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateReferenceExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateReferenceExpression(_node: Parser.SyntaxNode): Generator<Code> {
   // TODO:
 }
 

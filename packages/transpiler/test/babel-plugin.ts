@@ -1,10 +1,11 @@
 // @ts-nocheck
 
+import type { NodePath } from "@babel/traverse";
 import { declare } from "@babel/helper-plugin-utils";
-import traverse, { type NodePath } from "@babel/traverse";
+import traverse from "@babel/traverse";
 import * as t from "@babel/types";
 
-export default declare(api => {
+export default declare((_api) => {
   return {
     name: "proposal-do-expressions",
     manipulateOptions: (_, parser) => parser.plugins.push("doExpressions"),
@@ -95,10 +96,12 @@ function flattenStatement(path: NodePath<t.Statement>) {
         captureDoExpressionResult(node.body, uid);
         path.replaceWith(uid);
       }
-    } else {
+    }
+    else {
       if (isTopLevelSideEffectFree(node)) {
         flattenNormal(path);
-      } else {
+      }
+      else {
         if (traverse.hasType(node, "DoExpression")) {
           flattenNormal(path);
         }
@@ -110,7 +113,8 @@ function flattenStatement(path: NodePath<t.Statement>) {
             ),
           );
           path.replaceWith(uid);
-        } else {
+        }
+        else {
           effects.push(t.expressionStatement(node));
         }
       }
@@ -131,11 +135,12 @@ function flattenStatement(path: NodePath<t.Statement>) {
     for (let i = expressions.length - 1; i >= 0; i--) {
       const path = expressions[i];
       if (
-        path.node.type !== "DoExpression" &&
-        !traverse.hasType(path.node, "DoExpression")
+        path.node.type !== "DoExpression"
+        && !traverse.hasType(path.node, "DoExpression")
       ) {
         expressions.pop();
-      } else {
+      }
+      else {
         break;
       }
     }
@@ -147,7 +152,8 @@ function captureDoExpressionResult(
   node: t.Statement | undefined,
   uid: t.Identifier,
 ): t.Statement {
-  if (!node) return undefined;
+  if (!node)
+    return undefined;
 
   switch (node.type) {
     case "ExpressionStatement":
@@ -188,7 +194,8 @@ function captureDoExpressionResult(
                 if (foundBreak) {
                   return captureLastNonEmpty(statements, i);
                 }
-              } else {
+              }
+              else {
                 return true;
               }
             }
@@ -222,8 +229,8 @@ function captureDoExpressionResult(
     return false;
     function isEmpty(node: t.Statement): boolean {
       return (
-        t.isEmptyStatement(node) ||
-        (t.isBlockStatement(node) && node.body.every(isEmpty))
+        t.isEmptyStatement(node)
+        || (t.isBlockStatement(node) && node.body.every(isEmpty))
       );
     }
   }
@@ -231,21 +238,21 @@ function captureDoExpressionResult(
 
 function isTopLevelSideEffectFree(node: t.Node): boolean {
   return (
-    t.isLiteral(node) ||
-    t.isIdentifier(node) ||
-    t.isBinaryExpression(node) ||
-    t.isLogicalExpression(node) ||
-    t.isConditionalExpression(node) ||
-    t.isObjectExpression(node) ||
-    t.isArrayExpression(node) ||
-    t.isClassExpression(node) ||
-    t.isFunctionExpression(node) ||
-    t.isArrowFunctionExpression(node) ||
-    t.isParenthesizedExpression(node) ||
-    t.isRecordExpression(node) ||
-    (t.isUnaryExpression(node) &&
-      node.operator !== "throw" &&
-      node.operator !== "delete") ||
-    (t.isMemberExpression(node) && t.isIdentifier(node.property))
+    t.isLiteral(node)
+    || t.isIdentifier(node)
+    || t.isBinaryExpression(node)
+    || t.isLogicalExpression(node)
+    || t.isConditionalExpression(node)
+    || t.isObjectExpression(node)
+    || t.isArrayExpression(node)
+    || t.isClassExpression(node)
+    || t.isFunctionExpression(node)
+    || t.isArrowFunctionExpression(node)
+    || t.isParenthesizedExpression(node)
+    || t.isRecordExpression(node)
+    || (t.isUnaryExpression(node)
+      && node.operator !== "throw"
+      && node.operator !== "delete")
+    || (t.isMemberExpression(node) && t.isIdentifier(node.property))
   );
 }

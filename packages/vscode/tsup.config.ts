@@ -1,12 +1,14 @@
+import fs from "node:fs";
+import process from "node:process";
 import { defineConfig } from "tsup";
-import fs from "fs";
 
 const unlinkSync = fs.unlinkSync;
 fs.unlinkSync = (path) => {
   if (typeof path === "string" && path.endsWith(".node")) {
     try {
       return unlinkSync(path);
-    } catch {
+    }
+    catch {
       return;
     }
   }

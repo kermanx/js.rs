@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "strict": true,
     "allowJs": true,
-    "noEmit": true,
-    "lib": ["ESNext"]
+    "strict": true,
+    "noEmit": true
   }
 }

@@ -1,11 +1,12 @@
-import { forEachEmbeddedCode, type LanguagePlugin } from "@volar/language-core";
+import type { LanguagePlugin } from "@volar/language-core";
 import type { InitializeParams } from "@volar/language-service";
 import type { TypeScriptExtraServiceScript } from "@volar/typescript";
 import type ts from "typescript";
 import type { URI } from "vscode-uri";
+import { forEachEmbeddedCode } from "@volar/language-core";
 import { JsrsVirtualCode } from "./virtualCode";
 
-export async function createJsrsLanguagePlugin(params: InitializeParams): Promise<LanguagePlugin<URI>> {
+export async function createJsrsLanguagePlugin(_params: InitializeParams): Promise<LanguagePlugin<URI>> {
   return {
     getLanguageId(uri) {
       if (uri.path.endsWith(".jsrs")) {
@@ -27,23 +28,23 @@ export async function createJsrsLanguagePlugin(params: InitializeParams): Promis
         for (const code of forEachEmbeddedCode(root)) {
           if (code.languageId === "javascript") {
             scripts.push({
-              fileName: fileName + "." + code.id + ".js",
+              fileName: `${fileName}.${code.id}.js`,
               code,
               extension: ".js",
-              scriptKind: 1 satisfies ts.ScriptKind.JS
+              scriptKind: 1 satisfies ts.ScriptKind.JS,
             });
           }
           else if (code.languageId === "typescript") {
             scripts.push({
-              fileName: fileName + "." + code.id + ".ts",
+              fileName: `${fileName}.${code.id}.ts`,
               code,
               extension: ".ts",
-              scriptKind: 3 satisfies ts.ScriptKind.TS
+              scriptKind: 3 satisfies ts.ScriptKind.TS,
             });
           }
         }
         return scripts;
-      }
-    }
+      },
+    },
   };
 }

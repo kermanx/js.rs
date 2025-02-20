@@ -1,4 +1,5 @@
-import { createConnection, createServer, createTypeScriptProject, type Diagnostic, loadTsdkByPath } from "@volar/language-server/node";
+import type { Diagnostic } from "@volar/language-server/node";
+import { createConnection, createServer, createTypeScriptProject, loadTsdkByPath } from "@volar/language-server/node";
 import { create as createTypeScriptServices } from "volar-service-typescript";
 import { URI } from "vscode-uri";
 import { createJsrsLanguagePlugin } from "./languagePlugin";
@@ -15,20 +16,20 @@ connection.onInitialize((params) => {
     params,
     createTypeScriptProject(tsdk.typescript, tsdk.diagnosticMessages, async () => ({
       languagePlugins: [
-        await createJsrsLanguagePlugin(params)
-      ]
+        await createJsrsLanguagePlugin(params),
+      ],
     })),
     [
       ...createTypeScriptServices(tsdk.typescript),
       {
         capabilities: {
           codeLensProvider: {
-            resolveProvider: true
+            resolveProvider: true,
           },
           diagnosticProvider: {
             interFileDependencies: true,
-            workspaceDiagnostics: true
-          }
+            workspaceDiagnostics: true,
+          },
         },
         create(context) {
           return {
@@ -43,18 +44,18 @@ connection.onInitialize((params) => {
               }
               const errors: Diagnostic[] = [];
               return errors;
-            }
+            },
           };
-        }
-      }
-    ]
+        },
+      },
+    ],
   );
 });
 
 connection.onInitialized(() => {
   server.fileWatcher.watchFiles([
     "**/*.ts",
-    "**/*.jsrs"
+    "**/*.jsrs",
   ]);
   server.initialized();
 });
