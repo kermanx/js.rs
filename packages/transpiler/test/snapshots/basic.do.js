@@ -7,6 +7,7 @@ export { y, y1, y2, t, h };
 import { x } from "t";
 export { x };
 export * from "s";
+import * as r from "r";
 export function add(a, b) {
   return a + b;
 }

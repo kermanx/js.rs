@@ -1,6 +1,7 @@
 pub use crate::x::{x::y::{self, y1, y2}, z::self as t, t as h};
 pub use t::x;
 pub use s::*;
+pub use r;
 
 pub fn add(a: i32, b: i32) -> i32 {
   a + b

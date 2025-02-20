@@ -698,9 +698,14 @@ export class Printer {
         }
         break;
       }
+      case "identifier": {
+        const name = item.text;
+        yield [`import * as ${name} from "${name}";\n`, item.startPosition];
+        break;
+      }
       case "use_as_clause": {
         const original = item.namedChildren[0];
-        yield* this.printUseItem(original, "", alias);
+        yield* this.printUseItem(original, base, alias);
         break;
       }
       case "use_wildcard": {
@@ -736,7 +741,7 @@ export class Printer {
         return path.text;
       }
       else if (path.type === "scoped_identifier") {
-        return path.namedChildren[1].text;
+        return getSelfName(path.namedChildren[1]);
       }
       else if (path.type === "crate") {
         return "crate";
