@@ -5,7 +5,7 @@ import { generateEnum } from "./enum";
 import { FunctionKind, generateFunction } from "./function";
 import { generateImpl } from "./impl";
 import { generatePrelude } from "./prelude";
-import { generateStruct } from "./struct";
+import { generateStruct, generateStructExpression } from "./struct";
 import { generateUse } from "./use";
 import { between, generateChildren, wrapWith } from "./utils";
 
@@ -133,6 +133,9 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
     case "self":
       yield* generateSelf(node);
       break;
+    case "struct_expression":
+      yield* generateStructExpression(node);
+      break;
     case "ERROR":
       yield* generateBlock(node, false);
       break;
@@ -170,7 +173,7 @@ export function* generateIdentifier(node: SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateScopedIdentifier(node: SyntaxNode): Generator<Code> {
+export function* generateScopedIdentifier(node: SyntaxNode): Generator<Code> {
   let first = true;
   for (const child of node.namedChildren) {
     if (!first) {

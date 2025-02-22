@@ -12,5 +12,8 @@ impl A {
 }
 
 fn main(a: A) {
-  let x = a.method()
+  let x = a.method();
+  let y = A{
+    field: 23
+  };
 }

@@ -1,0 +1,21 @@
+enum E {
+  A,
+  B(string, number),
+  C{ x: string }
+}
+
+impl E {
+  fn static_method() {
+    
+  }
+  fn method(&self) {
+    1
+  }
+}
+
+fn main(e: E) {
+  let x = e.method();
+  let a = E::A;
+  let b = E::B("1", 1);
+  let c = E::C{ x: "a" };
+}
