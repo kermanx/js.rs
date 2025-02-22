@@ -1,5 +1,6 @@
 import type { SyntaxNode } from "tree-sitter";
-import { UserError, type Code } from "../types";
+import type { Code } from "../types";
+import { UserError } from "../types";
 import { codeFeatures } from "../utils/codeFeatures";
 import { context } from "./context";
 import { generateEnum } from "./enum";
@@ -29,10 +30,12 @@ export function* generateBlock(node: SyntaxNode, implicitReturn: boolean): Gener
           yield* wrapWith(node.startIndex, node.endIndex, codeFeatures.verification, "return");
           yield " ";
           yield* generateExpression(node);
-        } else {
+        }
+        else {
           yield* generateStatement(node);
         }
-      } else {
+      }
+      else {
         yield* generateStatement(node);
       }
     }
@@ -339,7 +342,7 @@ function* generateReturnExpression(node: SyntaxNode): Generator<Code> {
   if (context.needCaptureReturn) {
     const typeCode = context.returnType[context.returnType.length - 1];
     if (typeCode) {
-      yield `(`
+      yield `(`;
       if (value) {
         yield* generateExpression(value);
       }
@@ -353,7 +356,8 @@ function* generateReturnExpression(node: SyntaxNode): Generator<Code> {
       yield ` `;
       yield* typeCode;
       yield `)`;
-    } else {
+    }
+    else {
       yield new UserError(node, "Return type must be specified explicitly");
     }
   }
