@@ -42,7 +42,7 @@ export function* generateFunction(
 
   const body = node.childForFieldName("body")!;
   if (body.type === "block") {
-    yield* generateBlock(body);
+    yield* generateBlock(body, true);
   }
   else {
     yield* generateExpression(body);

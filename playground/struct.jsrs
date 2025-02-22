@@ -13,5 +13,4 @@ impl A {
 
 fn main(a: A) {
   let x = a.method()
-
 }

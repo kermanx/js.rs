@@ -9,12 +9,24 @@ import { generateUse } from "./use";
 import { between, generateChildren, wrapWith } from "./utils";
 
 export function* generateRoot(root: SyntaxNode): Generator<Code> {
-  yield* generateBlock(root);
+  yield* generateBlock(root, false);
   yield* generatePrelude();
 }
 
-export function* generateBlock(node: SyntaxNode): Generator<Code> {
-  yield* generateChildren(node, generateStatement);
+export function* generateBlock(node: SyntaxNode, implicitReturn: boolean): Generator<Code> {
+  yield* generateChildren(node, implicitReturn
+    ? function* (node, index, array) {
+      if (index === array.length - 1
+        && (node.type.endsWith("_expression")
+          || node.type.endsWith("_literal")
+          || (node.type === "expression_statement"
+            && (node.namedChildren[0].type === "match_expression"
+              || node.namedChildren[0].type === "if_expression")))) {
+        yield "return ";
+      }
+      yield* generateStatement(node);
+    }
+    : generateStatement);
 }
 
 export function* generateStatement(node: SyntaxNode): Generator<Code> {
@@ -155,7 +167,7 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
       yield* generateSelf(node);
       break;
     case "ERROR":
-      yield* generateBlock(node);
+      yield* generateBlock(node, false);
       break;
   }
 }
@@ -321,7 +333,7 @@ function* generateReturnExpression(node: SyntaxNode): Generator<Code> {
 }
 
 export function* generateSelf(node: SyntaxNode): Generator<Code> {
-  yield ["this", node.startIndex]
+  yield ["this", node.startIndex];
 }
 
 function* generateImpl(node: SyntaxNode): Generator<Code> {

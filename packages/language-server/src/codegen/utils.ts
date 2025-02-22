@@ -55,13 +55,14 @@ export function* between(
 
 export function* generateChildren(
   node: SyntaxNode,
-  generate: (node: SyntaxNode) => Generator<Code>,
+  generate: (node: SyntaxNode, index: number, array: SyntaxNode[]) => Generator<Code>,
 ): Generator<Code> {
   let prev: SyntaxNode | null = null;
-  for (const child of node.children) {
+  for (let i = 0; i < node.namedChildren.length; i++) {
+    const child = node.namedChildren[i];
     yield* between(node, prev, child);
     if (child.isNamed && child.type !== "ERROR") {
-      yield* generate(child);
+      yield* generate(child, i, node.namedChildren);
     }
     else {
       yield child;
