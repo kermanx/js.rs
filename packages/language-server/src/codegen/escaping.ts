@@ -1,0 +1,3 @@
+export function escapeCtorName(name: string) {
+  return `__JSRS_${name}__Ctor`
+}

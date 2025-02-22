@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
 import type { Code } from "../types";
-import { wrapWith } from "../utils";
 import { codeFeatures } from "../utils/codeFeatures";
+import { wrapWith } from "./utils";
 
 export function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
   const reexportsNamed: Code[] = [];

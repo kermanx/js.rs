@@ -1,47 +1,35 @@
 import type Parser from "tree-sitter";
 import type { Code } from "../types";
-import { between, wrapWith } from "../utils";
 import { codeFeatures } from "../utils/codeFeatures";
+import { escapeCtorName } from "./escaping";
+import { FunctionKind, generateFunction } from "./function";
 import { generatePrelude } from "./prelude";
+import { generateTypeParameters } from "./type";
 import { generateUse } from "./use";
+import { between, generateChildren, wrapWith } from "./utils";
 
 export function* generateRoot(root: Parser.SyntaxNode): Generator<Code> {
   yield* generateBlock(root);
   yield* generatePrelude();
 }
 
-function* generateChildren(
-  node: Parser.SyntaxNode,
-  generate: (node: Parser.SyntaxNode) => Generator<Code> = generateStatement,
-): Generator<Code> {
-  let prev: Parser.SyntaxNode | null = null;
-  for (const child of node.children) {
-    yield* between(node, prev, child);
-    if (child.isNamed && child.type !== "ERROR") {
-      yield* generate(child);
-    }
-    else {
-      yield child;
-    }
-    prev = child;
-  }
-  yield* between(node, prev, null);
-}
-
-function* generateBlock(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateBlock(node: Parser.SyntaxNode): Generator<Code> {
   yield* generateChildren(node, generateStatement);
 }
 
 export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "function_item":
-      yield* generateFunction(node);
+      yield* generateFunction(node, FunctionKind.Declaration);
       break;
     case "enum_item":
       yield* generateEnum(node);
       break;
     case "struct_item":
       yield* generateStruct(node);
+      break;
+    case "impl_item":
+      yield* generateImpl(node);
       break;
     case "let_declaration":
       yield* generateLocal(node);
@@ -61,83 +49,27 @@ export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateFunction(
-  node: Parser.SyntaxNode,
-  isDeclaration = true,
-  isClosure = false,
-): Generator<Code> {
-  if (isDeclaration && node.namedChildren[0]?.type === "visibility_modifier") {
-    yield `export `;
-  }
-
-  if (!isClosure) {
-    yield `function `;
-
-    if (isDeclaration) {
-      const name = node.childForFieldName("name")!;
-      yield* generateIdentifier(name);
-    }
-  }
-
-  const parameters = node.childForFieldName("parameters")!;
-  yield* generateChildren(parameters, generateParameter);
-
-  const type = node.childForFieldName("return_type");
-  if (type) {
-    yield `: `;
-    yield type;
-  }
-
-  if (isClosure) {
-    yield ` =>`;
-  }
-  yield ` `;
-
-  const body = node.childForFieldName("body")!;
-  if (body.type === "block") {
-    yield* generateBlock(body);
-  }
-  else {
-    yield* generateExpression(body);
-  }
-}
-
-function* generateParameter(node: Parser.SyntaxNode): Generator<Code> {
-  if (node.type === "self_parameter") {
-    // TODO: codegen error
-    yield `this: unknown`;
-    return;
-  }
-
-  if (node.type === "identifier" || node.type === "type_identifier") {
-    yield* generateIdentifier(node);
-    return;
-  }
-
-  const pattern = node.childForFieldName("pattern")!;
-  const type = node.childForFieldName("type");
-
-  yield pattern;
-  yield* between(node, pattern, type);
-  if (type) {
-    yield type;
-  }
-}
-
 function* generateEnum(_node: Parser.SyntaxNode): Generator<Code> {
   // TODO:
 }
 
 function* generateStruct(node: Parser.SyntaxNode): Generator<Code> {
   const name = node.childForFieldName("name")!;
+  const typeParameters = node.childForFieldName("type_parameters");
   const body = node.childForFieldName("body");
 
-  yield `interface __JSRS_${name.text}Constructor { new(): ${name.text}; }\n`;
-  yield `var ${name.text}!: __JSRS_${name.text}Constructor;\n`;
+  const ctorName = escapeCtorName(name.text);
+  yield `interface ${ctorName} { new(): ${name.text}; }\n`;
+  yield `var ${name.text}!: ${ctorName};\n`;
+
+  yield `interface `;
+  yield name;
+
+  if (typeParameters)
+    yield* generateTypeParameters(typeParameters);
+
+  yield ` {\n`;
   if (body) {
-    yield `interface `;
-    yield name;
-    yield ` {\n`;
     for (const child of body.namedChildren) {
       if (child.type !== "field_declaration") {
         continue;
@@ -147,8 +79,8 @@ function* generateStruct(node: Parser.SyntaxNode): Generator<Code> {
       yield child.childForFieldName("type")!;
       yield `,\n`;
     }
-    yield `}`;
   }
+  yield `}`;
 }
 
 function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
@@ -171,7 +103,7 @@ function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "integer_literal":
     case "boolean_literal":
@@ -199,7 +131,7 @@ function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
       yield* generateCallExpression(node);
       break;
     case "closure_expression":
-      yield* generateFunction(node, false, true);
+      yield* generateFunction(node, FunctionKind.Closure);
       break;
     case "field_expression":
       yield* generateFieldExpression(node);
@@ -246,7 +178,7 @@ function* generateBinaryExpression(node: Parser.SyntaxNode): Generator<Code> {
   yield* generateExpression(right);
 }
 
-function* generateIdentifier(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateIdentifier(node: Parser.SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "identifier":
     case "field_identifier":
@@ -388,11 +320,74 @@ function* generateReturnExpression(node: Parser.SyntaxNode): Generator<Code> {
   yield `;`;
 }
 
-function* generateSelf(node: Parser.SyntaxNode): Generator<Code> {
-  yield* wrapWith(
-    node.startIndex,
-    node.endIndex,
-    codeFeatures.all,
-    `this`,
-  );
+export function* generateSelf(node: Parser.SyntaxNode): Generator<Code> {
+  yield ["this", node.startIndex]
+}
+
+function* generateImpl(node: Parser.SyntaxNode): Generator<Code> {
+  const trait = node.childForFieldName("trait");
+  const type = node.childForFieldName("type")!;
+  const body = node.childForFieldName("body")!;
+
+  const staticMethods: Parser.SyntaxNode[] = [];
+  const instanceMethods: Parser.SyntaxNode[] = [];
+
+  for (const child of body.namedChildren) {
+    if (child.type === "function_item") {
+      yield* generateFunction(child, FunctionKind.Implementation, type);
+      yield "\n";
+
+      const name = child.childForFieldName("name")!;
+      const isStatic = child.childForFieldName("parameters")?.namedChildren[0]?.type !== "self_parameter";
+      if (isStatic)
+        staticMethods.push(name);
+      else
+        instanceMethods.push(name);
+    }
+  }
+
+  // TODO: declare module "..." {
+
+  const name = type.text; // FIXME: A::B
+  if (trait) {
+    const traitName = trait.text;
+    if (staticMethods.length) {
+      yield `;({ `;
+      for (const methodName of staticMethods) {
+        yield methodName;
+        yield ", ";
+      }
+      yield `} satisfies ${escapeCtorName(traitName)})\n`;
+      yield `interface ${escapeCtorName(name)} extends ${escapeCtorName(traitName)} {}\n`;
+    }
+    if (instanceMethods.length) {
+      yield `;({ `;
+      for (const methodName of instanceMethods) {
+        yield methodName;
+        yield ", ";
+      }
+      yield `} satisfies ${traitName})\n`;
+      yield `interface ${name} extends ${traitName} {}\n`;
+    }
+  }
+  else {
+    if (staticMethods.length) {
+      yield `interface ${escapeCtorName(name)} { `;
+      for (const methodName of staticMethods) {
+        yield methodName;
+        yield ": typeof ";
+        yield methodName;
+        yield "; ";
+      }
+      yield "}\n";
+    }
+    yield `interface ${name} { `;
+    for (const methodName of instanceMethods) {
+      yield methodName;
+      yield ": typeof ";
+      yield methodName;
+      yield "; ";
+    }
+    yield "}\n";
+  }
 }

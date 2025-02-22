@@ -1,0 +1,17 @@
+struct A {
+  field: number
+}
+
+impl A {
+  fn static_method() {
+    
+  }
+  fn method(&self) {
+    1
+  }
+}
+
+fn main(a: A) {
+  let x = a.method()
+
+}
