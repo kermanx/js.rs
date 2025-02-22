@@ -1,8 +1,10 @@
 import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 import { generateBlock, generateExpression, generateIdentifier, generateSelf } from ".";
+import { codeFeatures } from "../utils/codeFeatures";
+import { context } from "./context";
 import { generateType } from "./type";
-import { between, generateChildren } from "./utils";
+import { between, generateChildren, wrapWith } from "./utils";
 
 export enum FunctionKind {
   Declaration,
@@ -16,6 +18,7 @@ export function* generateFunction(
   kind: FunctionKind,
   selfType?: SyntaxNode,
 ): Generator<Code> {
+
   if (kind === FunctionKind.Declaration && node.namedChildren[0]?.type === "visibility_modifier") {
     yield `export `;
   }
@@ -31,8 +34,12 @@ export function* generateFunction(
 
   const type = node.childForFieldName("return_type");
   if (type) {
+    const typeCode = [...generateType(type)];
     yield `: `;
-    yield type;
+    yield* typeCode;
+    context.returnType.push(typeCode);
+  } else {
+    context.returnType.push(null);
   }
 
   if (kind === FunctionKind.Closure) {

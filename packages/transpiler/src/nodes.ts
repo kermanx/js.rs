@@ -130,6 +130,7 @@ export class Printer {
         if (
           child.type.endsWith("_expression")
           || child.type.endsWith("_literal")
+          || child.type.endsWith("identifier")
           || (child.type === "expression_statement"
             && (child.namedChildren[0].type === "match_expression"
               || child.namedChildren[0].type === "if_expression"))
@@ -289,8 +290,10 @@ export class Printer {
         yield* this.printExpr(expr.namedChildren[0]);
         yield ")";
         break;
-
       case "expression_statement":
+        yield* this.printExpr(expr.namedChildren[0]);
+        break;
+
       case "match_expression":
       case "block":
       case "if_expression":

@@ -6,3 +6,13 @@
 1 + 1;
 let mut a = 1;
 a.toString;
+
+fn foo() -> number {
+  let x = {
+    return "1";
+    1
+  } + {
+    2
+  };
+  x
+}

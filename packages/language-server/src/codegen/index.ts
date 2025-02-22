@@ -1,9 +1,11 @@
 import type { SyntaxNode } from "tree-sitter";
-import type { Code } from "../types";
+import { UserError, type Code } from "../types";
 import { codeFeatures } from "../utils/codeFeatures";
+import { context } from "./context";
 import { generateEnum } from "./enum";
 import { FunctionKind, generateFunction } from "./function";
 import { generateImpl } from "./impl";
+import { generateMatch } from "./match";
 import { generatePrelude } from "./prelude";
 import { generateStruct, generateStructExpression } from "./struct";
 import { generateUse } from "./use";
@@ -17,15 +19,22 @@ export function* generateRoot(root: SyntaxNode): Generator<Code> {
 export function* generateBlock(node: SyntaxNode, implicitReturn: boolean): Generator<Code> {
   yield* generateChildren(node, implicitReturn
     ? function* (node, index, array) {
-      if (index === array.length - 1
-        && (node.type.endsWith("_expression")
+      if (index === array.length - 1) {
+        if (node.type.endsWith("_expression")
           || node.type.endsWith("_literal")
+          || node.type.endsWith("identifier")
           || (node.type === "expression_statement"
             && (node.namedChildren[0].type === "match_expression"
-              || node.namedChildren[0].type === "if_expression")))) {
-        yield "return ";
+              || node.namedChildren[0].type === "if_expression"))) {
+          yield* wrapWith(node.startIndex, node.endIndex, codeFeatures.verification, "return");
+          yield " ";
+          yield* generateExpression(node);
+        } else {
+          yield* generateStatement(node);
+        }
+      } else {
+        yield* generateStatement(node);
       }
-      yield* generateStatement(node);
     }
     : generateStatement);
 }
@@ -48,10 +57,19 @@ export function* generateStatement(node: SyntaxNode): Generator<Code> {
       yield* generateLocal(node);
       break;
     case "expression_statement":
-      yield* generateExpression(node.namedChildren[0]);
+      yield* generateStatement(node.namedChildren[0]);
       break;
     case "use_declaration":
       yield* generateUse(node);
+      break;
+    case "match_expression":
+      yield* generateMatch(node);
+      break;
+    case "block":
+      yield* generateBlock(node, false);
+      break;
+    case "if_expression":
+      yield* generateIf(node);
       break;
     default:
       yield* generateExpression(node);
@@ -121,6 +139,9 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
     case "parenthesized_expression":
       yield* generateParenthesizedExpression(node);
       break;
+    case "expression_statement":
+      yield* generateExpression(node.namedChildren[0]);
+      break;
     case "range_expression":
       yield* generateRangeExpression(node);
       break;
@@ -136,6 +157,21 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
     case "struct_expression":
       yield* generateStructExpression(node);
       break;
+
+    case "block":
+      context.needCaptureReturn++;
+      yield "(() => ";
+      yield* generateBlock(node, true);
+      yield ")()";
+      context.needCaptureReturn--;
+      break;
+    case "match_expression":
+    case "if_expression":
+      // TODO:
+      // yield "(() => ";
+      // yield ")()";
+      break;
+
     case "ERROR":
       yield* generateBlock(node, false);
       break;
@@ -155,9 +191,14 @@ function* generateBinaryExpression(node: SyntaxNode): Generator<Code> {
   const left = node.children[0];
   const right = node.children[2];
 
-  yield* generateExpression(left);
-  yield* between(node, left, right);
-  yield* generateExpression(right);
+  yield* wrapWith(
+    node.startIndex,
+    node.endIndex,
+    codeFeatures.verification,
+    ...generateExpression(left),
+    ...between(node, left, right),
+    ...generateExpression(right),
+  );
 }
 
 export function* generateIdentifier(node: SyntaxNode): Generator<Code> {
@@ -293,15 +334,43 @@ function* generateReferenceExpression(_node: SyntaxNode): Generator<Code> {
 }
 
 function* generateReturnExpression(node: SyntaxNode): Generator<Code> {
-  const value = node.namedChildren[0];
+  const [keyword, value] = node.children;
 
-  yield `return `;
-  if (value) {
-    yield* generateExpression(value);
+  if (context.needCaptureReturn) {
+    const typeCode = context.returnType[context.returnType.length - 1];
+    if (typeCode) {
+      yield `(`
+      if (value) {
+        yield* generateExpression(value);
+      }
+      yield ` `;
+      yield* wrapWith(
+        keyword.startIndex,
+        keyword.endIndex,
+        codeFeatures.verification,
+        "satisfies",
+      );
+      yield ` `;
+      yield* typeCode;
+      yield `)`;
+    } else {
+      yield new UserError(node, "Return type must be specified explicitly");
+    }
   }
-  yield `;`;
+  else {
+    yield keyword;
+    yield " ";
+    if (value) {
+      yield* generateExpression(value);
+    }
+    yield `;`;
+  }
 }
 
 export function* generateSelf(node: SyntaxNode): Generator<Code> {
   yield ["this", node.startIndex];
+}
+
+function* generateIf(_node: SyntaxNode): Generator<Code> {
+  // TODO:
 }
