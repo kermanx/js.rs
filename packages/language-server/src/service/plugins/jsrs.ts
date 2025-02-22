@@ -1,6 +1,6 @@
 import type { Diagnostic } from "@volar/language-server/node";
 import type { DiagnosticSeverity, LanguageServicePlugin } from "@volar/language-service";
-import type Parser from "tree-sitter";
+import type { SyntaxNode } from "tree-sitter";
 import { URI } from "vscode-uri";
 import { JsrsVirtualCode } from "../../virtualCode";
 
@@ -49,7 +49,7 @@ export function create(): LanguageServicePlugin {
   };
 }
 
-function* collectErrorNode(node: Parser.SyntaxNode): Generator<Parser.SyntaxNode> {
+function* collectErrorNode(node: SyntaxNode): Generator<SyntaxNode> {
   if (node.isError) {
     yield node;
   }

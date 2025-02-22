@@ -1,5 +1,5 @@
 import type { CodeInformation } from "@volar/language-core";
-import type Parser from "tree-sitter";
+import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 
 export function wrapWith(
@@ -41,9 +41,9 @@ export function* wrapWith(
 }
 
 export function* between(
-  node: Parser.SyntaxNode,
-  left: Parser.SyntaxNode | null,
-  right: Parser.SyntaxNode | null,
+  node: SyntaxNode,
+  left: SyntaxNode | null,
+  right: SyntaxNode | null,
 ): Generator<Code> {
   const start = left?.endIndex ?? node.startIndex;
   const end = right?.startIndex ?? node.endIndex;
@@ -54,10 +54,10 @@ export function* between(
 }
 
 export function* generateChildren(
-  node: Parser.SyntaxNode,
-  generate: (node: Parser.SyntaxNode) => Generator<Code>,
+  node: SyntaxNode,
+  generate: (node: SyntaxNode) => Generator<Code>,
 ): Generator<Code> {
-  let prev: Parser.SyntaxNode | null = null;
+  let prev: SyntaxNode | null = null;
   for (const child of node.children) {
     yield* between(node, prev, child);
     if (child.isNamed && child.type !== "ERROR") {

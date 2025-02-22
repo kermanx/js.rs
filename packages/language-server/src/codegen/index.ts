@@ -1,4 +1,4 @@
-import type Parser from "tree-sitter";
+import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 import { codeFeatures } from "../utils/codeFeatures";
 import { escapeCtorName } from "./escaping";
@@ -8,16 +8,16 @@ import { generateTypeParameters } from "./type";
 import { generateUse } from "./use";
 import { between, generateChildren, wrapWith } from "./utils";
 
-export function* generateRoot(root: Parser.SyntaxNode): Generator<Code> {
+export function* generateRoot(root: SyntaxNode): Generator<Code> {
   yield* generateBlock(root);
   yield* generatePrelude();
 }
 
-export function* generateBlock(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateBlock(node: SyntaxNode): Generator<Code> {
   yield* generateChildren(node, generateStatement);
 }
 
-export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateStatement(node: SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "function_item":
       yield* generateFunction(node, FunctionKind.Declaration);
@@ -49,11 +49,11 @@ export function* generateStatement(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateEnum(_node: Parser.SyntaxNode): Generator<Code> {
+function* generateEnum(_node: SyntaxNode): Generator<Code> {
   // TODO:
 }
 
-function* generateStruct(node: Parser.SyntaxNode): Generator<Code> {
+function* generateStruct(node: SyntaxNode): Generator<Code> {
   const name = node.childForFieldName("name")!;
   const typeParameters = node.childForFieldName("type_parameters");
   const body = node.childForFieldName("body");
@@ -83,7 +83,7 @@ function* generateStruct(node: Parser.SyntaxNode): Generator<Code> {
   yield `}`;
 }
 
-function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
+function* generateLocal(node: SyntaxNode): Generator<Code> {
   const mutable = node.namedChildren[0]?.type === "mutable_specifier";
   yield mutable ? "let " : "const ";
 
@@ -103,7 +103,7 @@ function* generateLocal(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-export function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateExpression(node: SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "integer_literal":
     case "boolean_literal":
@@ -160,7 +160,7 @@ export function* generateExpression(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateArrayExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateArrayExpression(node: SyntaxNode): Generator<Code> {
   yield `[`;
   for (const child of node.namedChildren) {
     yield* generateExpression(child);
@@ -169,7 +169,7 @@ function* generateArrayExpression(node: Parser.SyntaxNode): Generator<Code> {
   yield `]`;
 }
 
-function* generateBinaryExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateBinaryExpression(node: SyntaxNode): Generator<Code> {
   const left = node.children[0];
   const right = node.children[2];
 
@@ -178,7 +178,7 @@ function* generateBinaryExpression(node: Parser.SyntaxNode): Generator<Code> {
   yield* generateExpression(right);
 }
 
-export function* generateIdentifier(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateIdentifier(node: SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "identifier":
     case "field_identifier":
@@ -191,7 +191,7 @@ export function* generateIdentifier(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateScopedIdentifier(node: Parser.SyntaxNode): Generator<Code> {
+function* generateScopedIdentifier(node: SyntaxNode): Generator<Code> {
   let first = true;
   for (const child of node.namedChildren) {
     if (!first) {
@@ -202,7 +202,7 @@ function* generateScopedIdentifier(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateUnaryExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateUnaryExpression(node: SyntaxNode): Generator<Code> {
   const operator = node.children[0].text;
   if (operator === "*") {
     // TODO:
@@ -214,7 +214,7 @@ function* generateUnaryExpression(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateAssignmentExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateAssignmentExpression(node: SyntaxNode): Generator<Code> {
   const left = node.childForFieldName("left")!;
   const right = node.childForFieldName("right")!;
 
@@ -223,7 +223,7 @@ function* generateAssignmentExpression(node: Parser.SyntaxNode): Generator<Code>
   yield* generateExpression(right);
 }
 
-function* generateCallExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateCallExpression(node: SyntaxNode): Generator<Code> {
   const func = node.childForFieldName("function")!;
   const args = node.childForFieldName("arguments")!;
 
@@ -236,7 +236,7 @@ function* generateCallExpression(node: Parser.SyntaxNode): Generator<Code> {
   yield `)`;
 }
 
-function* generateFieldExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateFieldExpression(node: SyntaxNode): Generator<Code> {
   const value = node.childForFieldName("value")!;
   const field = node.childForFieldName("field")!;
 
@@ -263,7 +263,7 @@ function* generateFieldExpression(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateIndexExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateIndexExpression(node: SyntaxNode): Generator<Code> {
   const target = node.namedChild(0)!;
   const index = node.namedChild(1)!;
 
@@ -282,7 +282,7 @@ function* generateIndexExpression(node: Parser.SyntaxNode): Generator<Code> {
   }
 }
 
-function* generateParenthesizedExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateParenthesizedExpression(node: SyntaxNode): Generator<Code> {
   const exp = node.namedChildren[0];
 
   yield `(`;
@@ -290,7 +290,7 @@ function* generateParenthesizedExpression(node: Parser.SyntaxNode): Generator<Co
   yield `)`;
 }
 
-function* generateRangeExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateRangeExpression(node: SyntaxNode): Generator<Code> {
   const from = node.namedChild(0)!;
   const to = node.namedChild(1);
 
@@ -306,11 +306,11 @@ function* generateRangeExpression(node: Parser.SyntaxNode): Generator<Code> {
   yield `)`;
 }
 
-function* generateReferenceExpression(_node: Parser.SyntaxNode): Generator<Code> {
+function* generateReferenceExpression(_node: SyntaxNode): Generator<Code> {
   // TODO:
 }
 
-function* generateReturnExpression(node: Parser.SyntaxNode): Generator<Code> {
+function* generateReturnExpression(node: SyntaxNode): Generator<Code> {
   const value = node.namedChildren[0];
 
   yield `return `;
@@ -320,17 +320,17 @@ function* generateReturnExpression(node: Parser.SyntaxNode): Generator<Code> {
   yield `;`;
 }
 
-export function* generateSelf(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateSelf(node: SyntaxNode): Generator<Code> {
   yield ["this", node.startIndex]
 }
 
-function* generateImpl(node: Parser.SyntaxNode): Generator<Code> {
+function* generateImpl(node: SyntaxNode): Generator<Code> {
   const trait = node.childForFieldName("trait");
   const type = node.childForFieldName("type")!;
   const body = node.childForFieldName("body")!;
 
-  const staticMethods: Parser.SyntaxNode[] = [];
-  const instanceMethods: Parser.SyntaxNode[] = [];
+  const staticMethods: SyntaxNode[] = [];
+  const instanceMethods: SyntaxNode[] = [];
 
   for (const child of body.namedChildren) {
     if (child.type === "function_item") {

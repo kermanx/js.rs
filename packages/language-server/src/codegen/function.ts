@@ -1,4 +1,4 @@
-import type Parser from "tree-sitter";
+import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 import { generateBlock, generateExpression, generateIdentifier, generateSelf } from ".";
 import { generateType } from "./type";
@@ -12,9 +12,9 @@ export enum FunctionKind {
 }
 
 export function* generateFunction(
-  node: Parser.SyntaxNode,
+  node: SyntaxNode,
   kind: FunctionKind,
-  selfType?: Parser.SyntaxNode,
+  selfType?: SyntaxNode,
 ): Generator<Code> {
   if (kind === FunctionKind.Declaration && node.namedChildren[0]?.type === "visibility_modifier") {
     yield `export `;
@@ -49,7 +49,7 @@ export function* generateFunction(
   }
 }
 
-function* generateParameter(node: Parser.SyntaxNode, selfType: Parser.SyntaxNode | undefined): Generator<Code> {
+function* generateParameter(node: SyntaxNode, selfType: SyntaxNode | undefined): Generator<Code> {
   if (node.type === "self_parameter") {
     yield* generateSelf(node.namedChildren[0]);
     yield ":";

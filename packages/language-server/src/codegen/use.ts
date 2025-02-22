@@ -1,9 +1,9 @@
-import type Parser from "tree-sitter";
+import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 import { codeFeatures } from "../utils/codeFeatures";
 import { wrapWith } from "./utils";
 
-export function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
+export function* generateUse(node: SyntaxNode): Generator<Code> {
   const reexportsNamed: Code[] = [];
   const reexportsAll: string[] = [];
   yield* generateUseItem(node.childForFieldName("argument")!);
@@ -27,7 +27,7 @@ export function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
     }
   }
 
-  function* generateUseItem(node: Parser.SyntaxNode, base = "", alias?: Code): Generator<Code> {
+  function* generateUseItem(node: SyntaxNode, base = "", alias?: Code): Generator<Code> {
     switch (node.type) {
       case "scoped_use_list": {
         const path = getPath(node.namedChildren[0]);
@@ -144,11 +144,11 @@ export function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
       }
     }
 
-    function getPath(path: Parser.SyntaxNode): string {
+    function getPath(path: SyntaxNode): string {
       return base ? `${base}/${getPathImpl(path)}` : getPathImpl(path);
     }
 
-    function getPathImpl(path: Parser.SyntaxNode): string {
+    function getPathImpl(path: SyntaxNode): string {
       if (path.type === "identifier") {
         return `${path.text}`;
       }
@@ -163,7 +163,7 @@ export function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
       }
     }
 
-    function getSelfName(path: Parser.SyntaxNode): string {
+    function getSelfName(path: SyntaxNode): string {
       if (path.type === "identifier") {
         return path.text;
       }
@@ -179,7 +179,7 @@ export function* generateUse(node: Parser.SyntaxNode): Generator<Code> {
     }
   }
 
-  function generatePath(node: Parser.SyntaxNode, path: string): Generator<Code> {
+  function generatePath(node: SyntaxNode, path: string): Generator<Code> {
     return wrapWith(
       node.startIndex,
       node.endIndex,
