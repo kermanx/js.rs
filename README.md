@@ -1,13 +1,14 @@
 # js.rs
 
-JavaScript in Rust Syntax (<del>= Rust with GC</del> 😂)
+JavaScript in Rust Syntax (<del>= Rust with GC 😂</del>)
 
 > Slowly working in progress.
 
 ### Why?
 
-- Usually JavaScript is fast enough
-- Learning a new syntax is hard for both human and LLM
+- Rust's restrictions make development slow
+- Usually JavaScript runs fast enough
+- Learning a new syntax is hard for both human and LLMs
 - Rust Syntax is nice
   - Enum and Pattern Matching
   - Block as Expression
@@ -15,13 +16,36 @@ JavaScript in Rust Syntax (<del>= Rust with GC</del> 😂)
 
 ### How?
 
-- **Transpiler**: Rust -> JavaScript
-- **IDE Support**: Type hint&completion powered by [Volar.js](https://volarjs.dev/)
-- **Runtime**: Some helpers for runtime
+- **Transpiler**: Rust -> JavaScript with [do-expressions](https://github.com/tc39/proposal-do-expressions) -> JavaScript
+- **IDE Support**: Full IDE support powered by [Volar.js](https://volarjs.dev/)
+- **Runtime**: Just using JavaScript runtime
 
-### Designs
+### Example
 
-- Traits are abstract classes
-- Structs are classes
-- Enums are discriminate + data
-- Lifetime annotations are discarded
+🚀 Exactly Rust syntax + JavaScript runtime
+
+```rust
+fn add_and_print(x: number, y: number) -> number {
+  let z = x + y;
+  console.log(z);
+  z
+}
+
+struct Rect(number, number);
+
+impl Rect { 
+  fn new(width: number, height: number) -> Self {
+    Self(width, height)
+  }
+}
+
+trait Shape {
+  fn area(&self) -> number;
+}
+
+impl Shape for Rect {
+  fn area(&self) -> number {
+    self.0 * self.1
+  }
+}
+```
