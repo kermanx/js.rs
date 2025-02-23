@@ -2,73 +2,76 @@ import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 import { escapeCtorName } from "./escaping";
 import { FunctionKind, generateFunction } from "./function";
+import { generateTypeParameters, getTypeParamPlaceholders } from "./type";
 
 export function* generateImpl(node: SyntaxNode): Generator<
   Code
 > {
+  const typeParams = node.childForFieldName("type_parameters");
   const trait = node.childForFieldName("trait");
   const type = node.childForFieldName("type")!;
   const body = node.childForFieldName("body")!;
+  const name = type.text; // FIXME: A::B
 
   const staticMethods: SyntaxNode[] = [];
   const instanceMethods: SyntaxNode[] = [];
-
   for (const child of body.namedChildren) {
     if (child.type === "function_item") {
-      yield* generateFunction(child, FunctionKind.Implementation, type);
-      yield "\n";
-
-      const name = child.childForFieldName("name")!;
       const isStatic = child.childForFieldName("parameters")?.namedChildren[0]?.type !== "self_parameter";
       if (isStatic)
-        staticMethods.push(name);
+        staticMethods.push(child);
       else
-        instanceMethods.push(name);
+        instanceMethods.push(child);
     }
   }
 
-  // TODO: declare module "..." {
+  if (staticMethods.length > 0) {
+    const implName = `__JSRS_impl_${node.startIndex}_static`;
+    yield `function ${implName}`;
+    yield* generateTypeParameters(typeParams);
+    yield `() { return {\n`;
+    for (const method of staticMethods) {
+      yield* generateFunction(method, FunctionKind.Implementation, type);
+      yield ",\n";
+    }
+    yield `} `;
 
-  const name = type.text; // FIXME: A::B
-  if (trait) {
-    const traitName = trait.text;
-    if (staticMethods.length) {
-      yield `;({ `;
-      for (const methodName of staticMethods) {
-        yield methodName;
-        yield ", ";
-      }
-      yield `} satisfies ${escapeCtorName(traitName)})\n`;
+    if (trait) {
+      const traitName = trait.text;
+      yield `satisfies ${escapeCtorName(traitName)}; }\n`;
+      // TODO: declare module "..." {
       yield `interface ${escapeCtorName(name)} extends ${escapeCtorName(traitName)} {}\n`;
     }
-    if (instanceMethods.length) {
-      yield `;({ `;
-      for (const methodName of instanceMethods) {
-        yield methodName;
-        yield ", ";
-      }
-      yield `} satisfies ${traitName})\n`;
-      yield `interface ${name} extends ${traitName} {}\n`;
+    else {
+      yield "}\n";
+      const typeParamPlaceholders = getTypeParamPlaceholders(typeParams);
+      yield `type ${implName}_T${typeParamPlaceholders} = ReturnType<typeof ${implName}${typeParamPlaceholders}>;\n`;
+      yield `interface ${escapeCtorName(name)} extends ${implName}_T${typeParamPlaceholders} {}\n`;
     }
   }
-  else {
-    if (staticMethods.length) {
-      yield `interface ${escapeCtorName(name)} { `;
-      for (const methodName of staticMethods) {
-        yield methodName;
-        yield ": typeof ";
-        yield methodName;
-        yield "; ";
-      }
+
+  if (instanceMethods.length > 0) {
+    const implName = `__JSRS_impl_${node.startIndex}`;
+    yield `function ${implName}`;
+    yield* generateTypeParameters(typeParams);
+    yield `() { return {\n`;
+    for (const method of instanceMethods) {
+      yield* generateFunction(method, FunctionKind.Implementation, type);
+      yield ",\n";
+    }
+    yield `} `;
+
+    if (trait) {
+      const traitName = trait.text;
+      yield `satisfies ${traitName}; }\n`;
+      // TODO: declare module "..." {
+      yield `interface ${name} extends ${traitName} {}\n`;
+    }
+    else {
       yield "}\n";
+      const typeParamPlaceholders = getTypeParamPlaceholders(typeParams);
+      yield `type ${implName}_T${typeParamPlaceholders} = ReturnType<typeof ${implName}${typeParamPlaceholders}>;\n`;
+      yield `interface ${name} extends ${implName}_T${typeParamPlaceholders} {}\n`;
     }
-    yield `interface ${name} { `;
-    for (const methodName of instanceMethods) {
-      yield methodName;
-      yield ": typeof ";
-      yield methodName;
-      yield "; ";
-    }
-    yield "}\n";
   }
 }

@@ -44,11 +44,12 @@ export function* between(
   node: SyntaxNode,
   left: SyntaxNode | null,
   right: SyntaxNode | null,
+  mapUnnamed: (text: string) => string = text => text,
 ): Generator<Code> {
   const start = left?.endIndex ?? node.startIndex;
   const end = right?.startIndex ?? node.endIndex;
   yield [
-    node.text.slice(start - node.startIndex, end - node.startIndex),
+    mapUnnamed(node.text.slice(start - node.startIndex, end - node.startIndex)),
     start,
   ];
 }
@@ -56,19 +57,14 @@ export function* between(
 export function* generateChildren(
   node: SyntaxNode,
   mapNamed: (node: SyntaxNode, index: number, array: SyntaxNode[]) => Iterable<Code>,
-  mapUnnamed: (node: SyntaxNode) => Code = node => node,
+  mapUnnamed: (text: string) => string = text => text,
 ): Generator<Code> {
   let prev: SyntaxNode | null = null;
   for (let i = 0; i < node.namedChildren.length; i++) {
     const child = node.namedChildren[i];
-    yield* between(node, prev, child);
-    if (child.isNamed && child.type !== "ERROR") {
-      yield* mapNamed(child, i, node.namedChildren);
-    }
-    else {
-      yield mapUnnamed(node);
-    }
+    yield* between(node, prev, child, mapUnnamed);
+    yield* mapNamed(child, i, node.namedChildren);
     prev = child;
   }
-  yield* between(node, prev, null);
+  yield* between(node, prev, null, mapUnnamed);
 }

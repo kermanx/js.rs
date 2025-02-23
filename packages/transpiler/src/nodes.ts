@@ -569,7 +569,7 @@ export class Printer {
     }
     else {
       yield "if (";
-      yield* this.printExpr(ifExpr.childForFieldName("condition")!);
+      yield* this.printExpr(condition);
       yield ") {\n";
     }
 

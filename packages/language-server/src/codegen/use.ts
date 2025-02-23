@@ -145,22 +145,7 @@ export function* generateUse(node: SyntaxNode): Generator<Code> {
     }
 
     function getPath(path: SyntaxNode): string {
-      return base ? `${base}/${getPathImpl(path)}` : getPathImpl(path);
-    }
-
-    function getPathImpl(path: SyntaxNode): string {
-      if (path.type === "identifier") {
-        return `${path.text}`;
-      }
-      else if (path.type === "scoped_identifier") {
-        return `${getPathImpl(path.namedChildren[0])}/${path.namedChildren[1].text}`;
-      }
-      else if (path.type === "crate") {
-        return `@`;
-      }
-      else {
-        return "";
-      }
+      return base ? `${base}/${printScopedIdentifier(path)}` : printScopedIdentifier(path);
     }
 
     function getSelfName(path: SyntaxNode): string {
@@ -188,5 +173,20 @@ export function* generateUse(node: SyntaxNode): Generator<Code> {
       path,
       `"`,
     );
+  }
+}
+
+export function printScopedIdentifier(path: SyntaxNode): string {
+  if (path.type === "identifier") {
+    return `${path.text}`;
+  }
+  else if (path.type === "scoped_identifier") {
+    return `${printScopedIdentifier(path.namedChildren[0])}/${path.namedChildren[1].text}`;
+  }
+  else if (path.type === "crate") {
+    return `@`;
+  }
+  else {
+    return "";
   }
 }

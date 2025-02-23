@@ -6,7 +6,7 @@ import { context } from "./context";
 import { generateEnum } from "./enum";
 import { FunctionKind, generateFunction } from "./function";
 import { generateImpl } from "./impl";
-import { generateMatch } from "./match";
+import { generateMatch, getPatternBindings } from "./match";
 import { generatePrelude } from "./prelude";
 import { generateStruct, generateStructExpression } from "./struct";
 import { generateUse } from "./use";
@@ -182,12 +182,7 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
 }
 
 function* generateArrayExpression(node: SyntaxNode): Generator<Code> {
-  yield `[`;
-  for (const child of node.namedChildren) {
-    yield* generateExpression(child);
-    yield `, `;
-  }
-  yield `]`;
+  yield* generateChildren(node, generateExpression, text => text.replace("(", "[").replace(")", "]"));
 }
 
 function* generateBinaryExpression(node: SyntaxNode): Generator<Code> {
@@ -254,12 +249,7 @@ function* generateCallExpression(node: SyntaxNode): Generator<Code> {
   const args = node.childForFieldName("arguments")!;
 
   yield* generateExpression(func);
-  yield `(`;
-  for (const arg of args.namedChildren) {
-    yield* generateExpression(arg);
-    yield `, `;
-  }
-  yield `)`;
+  yield* generateChildren(args, generateExpression);
 }
 
 function* generateFieldExpression(node: SyntaxNode): Generator<Code> {
@@ -332,8 +322,12 @@ function* generateRangeExpression(node: SyntaxNode): Generator<Code> {
   yield `)`;
 }
 
-function* generateReferenceExpression(_node: SyntaxNode): Generator<Code> {
-  // TODO:
+function* generateReferenceExpression(node: SyntaxNode): Generator<Code> {
+  const isMut = node.descendantsOfType("mutable_specifier").length > 0;
+  const value = node.childForFieldName("value")!;
+  yield isMut ? "__JSRS_mutRef(" : "__JSRS_ref(";
+  yield* generateExpression(value);
+  yield ")";
 }
 
 function* generateReturnExpression(node: SyntaxNode): Generator<Code> {
@@ -375,6 +369,45 @@ export function* generateSelf(node: SyntaxNode): Generator<Code> {
   yield ["this", node.startIndex];
 }
 
-function* generateIf(_node: SyntaxNode): Generator<Code> {
-  // TODO:
+function* generateIf(node: SyntaxNode): Generator<Code> {
+  const condition = node.childForFieldName("condition")!;
+  const consequence = node.childForFieldName("consequence")!;
+  const alternative = node.childForFieldName("alternative");
+  if (condition.type === "let_condition") {
+    const pattern = condition.childForFieldName("pattern")!;
+    const value = condition.childForFieldName("value")!;
+    
+    yield "if (__JSRS_any(";
+    yield* generateExpression(value);
+    yield "))";
+
+    const bindings = [...getPatternBindings(pattern)];
+    if (bindings.length) {
+      yield "{ const ";
+      let isFirst = true;
+      for (const binding of bindings) {
+        if (!isFirst) {
+          yield ", ";
+        }
+        isFirst = false;
+        yield binding;
+        yield "!";
+      }
+      yield "; "
+    }
+    yield* generateStatement(consequence);
+    if (bindings.length) {
+      yield " }";
+    }
+  }
+  else {
+    yield "if (";
+    yield* generateExpression(condition);
+    yield ")";
+    yield* generateStatement(consequence);
+  }
+  if (alternative) {
+    yield "else ";
+    yield* generateStatement(alternative.namedChildren[0]);
+  }
 }
