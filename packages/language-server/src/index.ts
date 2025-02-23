@@ -1,6 +1,7 @@
 import { createConnection, createServer, createTypeScriptProject, loadTsdkByPath } from "@volar/language-server/node";
 import { create as createTypeScriptServices } from "volar-service-typescript";
 import { createJsrsLanguagePlugin } from "./languagePlugin";
+import { proxyLanguageService } from "./proxy";
 import { getLanguageServicePlugins } from "./service";
 
 export { JsrsVirtualCode } from "./virtualCode";
@@ -22,7 +23,19 @@ connection.onInitialize((params) => {
     [
       ...createTypeScriptServices(tsdk.typescript),
       ...getLanguageServicePlugins(),
-    ],
+    ].map((plugin) => {
+      if (plugin.name !== "typescript-semantic")
+        return plugin;
+      return {
+        ...plugin,
+        create(context) {
+          const created = plugin.create(context);
+          const languageService = (created.provide as import("volar-service-typescript").Provide)["typescript/languageService"]();
+          proxyLanguageService(languageService);
+          return created;
+        },
+      };
+    }),
   );
 });
 
