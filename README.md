@@ -33,7 +33,7 @@ fn add_and_print(x: number, y: number) -> number {
 
 struct Rect(number, number);
 
-impl Rect { 
+impl Rect {
   fn new(width: number, height: number) -> Self {
     Self(width, height)
   }
