@@ -6,6 +6,7 @@ import { context } from "./context";
 import { generateEnum } from "./enum";
 import { FunctionKind, generateFunction } from "./function";
 import { generateImpl } from "./impl";
+import { generateMacroInvocation } from "./macro";
 import { generateMatch, getPatternBindings } from "./match";
 import { generatePrelude } from "./prelude";
 import { generateStruct, generateStructExpression } from "./struct";
@@ -73,6 +74,9 @@ export function* generateStatement(node: SyntaxNode): Generator<Code> {
       break;
     case "if_expression":
       yield* generateIf(node);
+      break;
+    case "macro_invocation":
+      yield* generateMacroInvocation(node);
       break;
     default:
       yield* generateExpression(node);

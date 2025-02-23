@@ -1,5 +1,6 @@
 import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
+import { context } from "./context";
 import { escapeCtorName } from "./escaping";
 import { FunctionKind, generateFunction } from "./function";
 import { generateTypeParameters, getTypeParamPlaceholders } from "./type";
@@ -12,6 +13,8 @@ export function* generateImpl(node: SyntaxNode): Generator<
   const type = node.childForFieldName("type")!;
   const body = node.childForFieldName("body")!;
   const name = type.text; // FIXME: A::B
+
+  const exporting = context.exportingTypes.has(name) ? "export " : "";
 
   const staticMethods: SyntaxNode[] = [];
   const instanceMethods: SyntaxNode[] = [];
@@ -40,13 +43,13 @@ export function* generateImpl(node: SyntaxNode): Generator<
       const traitName = trait.text;
       yield `satisfies ${escapeCtorName(traitName)}; }\n`;
       // TODO: declare module "..." {
-      yield `interface ${escapeCtorName(name)} extends ${escapeCtorName(traitName)} {}\n`;
+      yield `${exporting}interface ${escapeCtorName(name)} extends ${escapeCtorName(traitName)} {}\n`;
     }
     else {
       yield "}\n";
       const typeParamPlaceholders = getTypeParamPlaceholders(typeParams);
       yield `type ${implName}_T${typeParamPlaceholders} = ReturnType<typeof ${implName}${typeParamPlaceholders}>;\n`;
-      yield `interface ${escapeCtorName(name)} extends ${implName}_T${typeParamPlaceholders} {}\n`;
+      yield `${exporting}interface ${escapeCtorName(name)} extends ${implName}_T${typeParamPlaceholders} {}\n`;
     }
   }
 
@@ -65,13 +68,13 @@ export function* generateImpl(node: SyntaxNode): Generator<
       const traitName = trait.text;
       yield `satisfies ${traitName}; }\n`;
       // TODO: declare module "..." {
-      yield `interface ${name} extends ${traitName} {}\n`;
+      yield `${exporting}interface ${name} extends ${traitName} {}\n`;
     }
     else {
       yield "}\n";
       const typeParamPlaceholders = getTypeParamPlaceholders(typeParams);
       yield `type ${implName}_T${typeParamPlaceholders} = ReturnType<typeof ${implName}${typeParamPlaceholders}>;\n`;
-      yield `interface ${name} extends ${implName}_T${typeParamPlaceholders} {}\n`;
+      yield `${exporting}interface ${name} extends ${implName}_T${typeParamPlaceholders} {}\n`;
     }
   }
 }

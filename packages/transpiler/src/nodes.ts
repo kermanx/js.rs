@@ -734,7 +734,10 @@ export class Printer {
         return `${getPathImpl(path.namedChildren[0])}/${path.namedChildren[1].text}`;
       }
       else if (path.type === "crate") {
-        return `@`;
+        return `.`;
+      }
+      else if (path.type === "super") {
+        return `..`;
       }
       else {
         throw new Error(`Not implemented: ${path.type}`);

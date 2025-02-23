@@ -1,11 +1,13 @@
 import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 import { generateExpression } from ".";
+import { context } from "./context";
 import { escapeCtorName, escapeDataName } from "./escaping";
 import { generateType, generateTypeParameters } from "./type";
 import { generateChildren } from "./utils";
 
 export function* generateStruct(node: SyntaxNode): Generator<Code> {
+  const exporting = node.namedChildren[0]?.type === "visibility_modifier" ? "export " : "";
   const name = node.childForFieldName("name")!;
   const typeParameters = node.childForFieldName("type_parameters");
   const body = node.childForFieldName("body");
@@ -13,8 +15,11 @@ export function* generateStruct(node: SyntaxNode): Generator<Code> {
   const ctorName = escapeCtorName(name.text);
   const dataName = escapeDataName(name.text);
 
-  yield `interface ${ctorName} { (_: ${dataName}): ${name.text}; }\n`;
-  yield `var ${name.text}!: ${ctorName};\n`;
+  if (exporting)
+    context.exportingTypes.add(name.text);
+
+  yield `${exporting}interface ${ctorName} { (_: ${dataName}): ${name.text}; }\n`;
+  yield `${exporting}var ${name.text}!: ${ctorName};\n`;
 
   yield `interface `;
   yield dataName;
@@ -24,7 +29,7 @@ export function* generateStruct(node: SyntaxNode): Generator<Code> {
   else
     yield `{}`;
 
-  yield `\ninterface `;
+  yield `\n${exporting}interface `;
   yield name;
   yield ` extends ${dataName} {}\n`;
 }

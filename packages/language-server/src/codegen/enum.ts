@@ -1,13 +1,18 @@
 import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
+import { context } from "./context";
 import { escapeCtorName } from "./escaping";
 import { generateFieldDeclarationList } from "./struct";
 import { generateType, generateTypeParameters } from "./type";
 
 export function* generateEnum(node: SyntaxNode): Generator<Code> {
+  const exporting = node.namedChildren[0]?.type === "visibility_modifier" ? "export " : "";
   const name = node.childForFieldName("name")!;
   const typeParameters = node.childForFieldName("type_parameters");
   const body = node.childForFieldName("body")!;
+
+  if (exporting)
+    context.exportingTypes.add(name.text);
 
   const symbolName = `__JSRS_${name.text}_Symbol`;
   yield `const ${symbolName} = Symbol();\n`;
@@ -17,12 +22,12 @@ export function* generateEnum(node: SyntaxNode): Generator<Code> {
     ...generateTypeParameters(typeParameters),
   ];
 
-  yield `interface `;
+  yield `${exporting}interface `;
   yield* enumType;
   yield ` { [${symbolName}]: typeof ${symbolName} }\n`;
 
   const ctorName = escapeCtorName(name.text);
-  yield `interface ${ctorName}`;
+  yield `${exporting}interface ${ctorName}`;
   if (typeParameters)
     yield* generateTypeParameters(typeParameters);
   yield ` {\n`;
@@ -34,7 +39,7 @@ export function* generateEnum(node: SyntaxNode): Generator<Code> {
     }
   }
   yield `}\n`;
-  yield `var `;
+  yield `${exporting}var `;
   yield name;
   yield `!: ${ctorName}\n`;
 }

@@ -6,6 +6,7 @@ import Parser from "tree-sitter";
 import _Rust from "tree-sitter-rust";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { generateRoot } from "./codegen";
+import { refreshCodegenContext } from "./codegen/context";
 import { resolveCodes } from "./utils/resolveCodes";
 
 let parser: Parser | undefined;
@@ -78,6 +79,7 @@ export class JsrsVirtualCode implements VirtualCode {
   }
 
   updateEmbeddedCodes() {
+    refreshCodegenContext();
     this.embeddedCodes = [
       resolveCodes("jsrs", "typescript", generateRoot(this.tree.rootNode)),
     ];

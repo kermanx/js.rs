@@ -1,7 +1,4 @@
-// pub use crate::x::{x::y::{self, y1, y2}, z::self as t, t as h};
-// pub use t::x;
-// pub use s::s;
-// pub use r;
+import!({ A } from "./struct.jsrs");
 
 1 + 1;
 let mut a = 1;

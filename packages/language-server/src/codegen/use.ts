@@ -148,27 +148,24 @@ export function* generateUse(node: SyntaxNode): Generator<Code> {
       return base ? `${base}/${printScopedIdentifier(path)}` : printScopedIdentifier(path);
     }
 
-    function getSelfName(path: SyntaxNode): string {
-      if (path.type === "identifier") {
-        return path.text;
-      }
-      else if (path.type === "scoped_identifier") {
+    function getSelfName(path: SyntaxNode): SyntaxNode {
+      if (path.type === "scoped_identifier") {
         return getSelfName(path.namedChildren[1]);
       }
-      else if (path.type === "crate") {
-        return "crate";
-      }
       else {
-        return "";
+        return path;
       }
     }
   }
 
   function generatePath(node: SyntaxNode, path: string): Generator<Code> {
+    if (path.startsWith(".") && !path.match(/\.[^/]*$/)) {
+      path = `${path}.jsrs`;
+    }
     return wrapWith(
       node.startIndex,
       node.endIndex,
-      codeFeatures.verification,
+      codeFeatures.all,
       `"`,
       path,
       `"`,
@@ -184,7 +181,10 @@ export function printScopedIdentifier(path: SyntaxNode): string {
     return `${printScopedIdentifier(path.namedChildren[0])}/${path.namedChildren[1].text}`;
   }
   else if (path.type === "crate") {
-    return `@`;
+    return `.`;
+  }
+  else if (path.type === "super") {
+    return `..`;
   }
   else {
     return "";

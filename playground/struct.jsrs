@@ -1,4 +1,4 @@
-struct A {
+pub struct A {
   field: number
 }
 
