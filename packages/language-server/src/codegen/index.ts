@@ -376,7 +376,7 @@ function* generateIf(node: SyntaxNode): Generator<Code> {
   if (condition.type === "let_condition") {
     const pattern = condition.childForFieldName("pattern")!;
     const value = condition.childForFieldName("value")!;
-    
+
     yield "if (__JSRS_any(";
     yield* generateExpression(value);
     yield "))";
@@ -393,7 +393,7 @@ function* generateIf(node: SyntaxNode): Generator<Code> {
         yield binding;
         yield "!";
       }
-      yield "; "
+      yield "; ";
     }
     yield* generateStatement(consequence);
     if (bindings.length) {
