@@ -16,9 +16,9 @@ Status summary for Rust language features in the current transpiler implementati
 - [x] `pub use` re-exports are supported for named and wildcard re-export.
 - [ ] `mod` module declarations are supported.
 - [ ] `extern crate` declarations are supported.
-- [ ] `const` item declarations are supported.
-- [ ] `static` item declarations are supported.
-- [ ] `type` alias item declarations are supported.
+- [x] `const` item declarations are supported.
+- [x] `static` item declarations are supported.
+- [x] `type` alias item declarations are supported.
 - [ ] `trait` item declarations are supported.
 - [ ] `impl Trait for Type` trait implementation blocks are supported.
 - [ ] Associated constants in `impl` blocks are supported.
@@ -92,27 +92,6 @@ Status summary for Rust language features in the current transpiler implementati
 - [ ] Reference patterns (`&pat`, `&mut pat`) are supported.
 - [ ] `@` binding patterns are supported.
 - [ ] Box patterns are supported.
-
-## Type system and generics
-
-- [x] Type annotations can be parsed where needed and are ignored in output.
-- [x] Generic type names can be referenced where needed by transpiler internals.
-- [ ] Generic parameters on functions are supported semantically.
-- [ ] Generic parameters on types are supported semantically.
-- [ ] Where clauses are supported.
-- [ ] Lifetime annotations are supported.
-- [ ] Const generics are supported.
-- [ ] Trait bounds are supported.
-- [ ] Higher-ranked trait bounds are supported.
-
-## Ownership model and safety-related Rust semantics
-
-- [x] Mutable reference-like mutation is emulated through runtime helpers.
-- [x] Destructuring helper semantics are emulated through runtime helpers.
-- [ ] Borrow checker rules are enforced.
-- [ ] Move semantics are enforced.
-- [ ] Lifetime checking is enforced.
-- [ ] Unsafe blocks are supported.
 
 ## Async and advanced language features
 

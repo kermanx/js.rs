@@ -4,6 +4,7 @@ import { generateMap } from "./sourcemap";
 import { Transpiler } from "./transpiler";
 import "./nodes";
 import "./matcher";
+import "./type";
 
 export function transpile(source: string, options?: Options): {
   code: string;

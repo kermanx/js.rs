@@ -169,6 +169,15 @@ const _T = defineTranspilerComponent({
       case "impl_item":
         yield* this.ItemImpl(node);
         break;
+      case "const_item":
+        yield* this.ItemConst(node);
+        break;
+      case "static_item":
+        yield* this.ItemStatic(node);
+        break;
+      case "type_item":
+        yield* this.ItemType(node);
+        break;
       case "line_comment":
         break;
       case "use_declaration":
@@ -484,6 +493,49 @@ const _T = defineTranspilerComponent({
     yield "function ";
     yield* this.Ident(struct.childForFieldName("name")!);
     yield "() {}";
+  },
+
+  * ItemConst(item: SyntaxNode): Code {
+    if (item.namedChildren[0]?.type === "visibility_modifier") {
+      yield "export ";
+    }
+    yield "const ";
+    yield* this.Ident(item.childForFieldName("name")!);
+    yield " = ";
+    const value = item.childForFieldName("value");
+    if (value) {
+      yield* this.Expr(value);
+    }
+    else {
+      yield "undefined";
+    }
+  },
+
+  * ItemStatic(item: SyntaxNode): Code {
+    if (item.namedChildren[0]?.type === "visibility_modifier") {
+      yield "export ";
+    }
+    const isMut = item.namedChildren.some(child => child.type === "mutable_specifier");
+    yield isMut ? "let " : "const ";
+    yield* this.Ident(item.childForFieldName("name")!);
+    yield " = ";
+    const value = item.childForFieldName("value");
+    if (value) {
+      yield* this.Expr(value);
+    }
+    else {
+      yield "undefined";
+    }
+  },
+
+  * ItemType(item: SyntaxNode): Code {
+    if (item.namedChildren[0]?.type === "visibility_modifier") {
+      yield "export ";
+    }
+    yield "const ";
+    yield item.childForFieldName("name")!;
+    yield " = ";
+    yield* this.Type(item.childForFieldName("type")!);
   },
 
   * Unary(unary: SyntaxNode): Code {
