@@ -1,0 +1,6 @@
+pub fn box_pattern(x) -> i32 {
+  match x {
+    box a => a,
+    _ => 0,
+  }
+}

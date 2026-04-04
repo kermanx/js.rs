@@ -14,8 +14,21 @@ const _T = defineTranspilerComponent({
       case "_":
         yield `true`;
         break;
+      case "mut_pattern":
+        yield* this.PatMatcher(pat.namedChildren[0], target);
+        break;
       case "identifier":
         yield* this.PatIdentMatcher(pat, target);
+        break;
+      case "captured_pattern":
+        yield* this.PatCapturedMatcher(pat, target);
+        break;
+      case "ref_pattern":
+      case "reference_pattern":
+        yield* this.PatReferenceMatcher(pat, target);
+        break;
+      case "box_pattern":
+        yield* this.PatBoxMatcher(pat, target);
         break;
       case "tuple_struct_pattern":
         yield* this.PatTupleStructMatcher(pat, target);
@@ -61,6 +74,45 @@ const _T = defineTranspilerComponent({
   * PatIdentMatcher(pat: SyntaxNode, target: string): Code {
     this.matchIdentifiers!.push(pat.text);
     yield `(${pat.text} = ${target})`;
+  },
+
+  * PatCapturedMatcher(pat: SyntaxNode, target: string): Code {
+    const binding = pat.namedChildren[0];
+    const inner = pat.namedChildren[1];
+
+    if (!binding) {
+      yield "true";
+      return;
+    }
+
+    if (!inner) {
+      yield* this.PatMatcher(binding, target);
+      return;
+    }
+
+    yield "(";
+    yield* this.PatMatcher(binding, target);
+    yield "&&";
+    yield* this.PatMatcher(inner, target);
+    yield ")";
+  },
+
+  * PatReferenceMatcher(pat: SyntaxNode, target: string): Code {
+    const inner = pat.namedChildren.find(child => child.type !== "mutable_specifier");
+    if (!inner) {
+      yield "true";
+      return;
+    }
+    yield* this.PatMatcher(inner, `_r.deref(${target})`);
+  },
+
+  * PatBoxMatcher(pat: SyntaxNode, target: string): Code {
+    const inner = pat.namedChildren[0];
+    if (!inner) {
+      yield "true";
+      return;
+    }
+    yield* this.PatMatcher(inner, `_r.deref(${target})`);
   },
 
   * RangePatternMatcher(pat: SyntaxNode, target: string): Code {

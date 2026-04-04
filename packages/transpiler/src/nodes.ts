@@ -665,7 +665,9 @@ const _T = defineTranspilerComponent({
     const body = match.childForFieldName("body")!;
     let isFirst = true;
     for (const arm of body.namedChildren) {
-      const pattern = arm.childForFieldName("pattern")!.namedChildren[0];
+      const matchPattern = arm.childForFieldName("pattern")!;
+      const pattern = matchPattern.namedChildren[0];
+      const guard = matchPattern.childForFieldName("condition");
 
       if (pattern) {
         yield isFirst ? ["if (", arm.startPosition] : ["else if (", arm.startPosition];
@@ -673,7 +675,27 @@ const _T = defineTranspilerComponent({
 
         this.matchDepth = 0;
         this.matchIdentifiers = [];
-        yield* this.PatMatcher(pattern, "_m0");
+
+        // parser fallback for unstable `box pat` syntax: pattern may be parsed as `identifier: box`
+        if (pattern.type === "identifier" && pattern.text === "box") {
+          const maybeInner = arm.namedChildren.find(child => child.type === "ERROR");
+          if (maybeInner && /^[A-Za-z_$][\\w$]*$/.test(maybeInner.text)) {
+            this.matchIdentifiers.push(maybeInner.text);
+            yield `(${maybeInner.text} = _r.deref(_m0), true)`;
+          }
+          else {
+            yield "true";
+          }
+        }
+        else {
+          yield* this.PatMatcher(pattern, "_m0");
+        }
+
+        if (guard) {
+          yield "&&(";
+          yield* this.Expr(guard);
+          yield ")";
+        }
         yield ") {\n";
         if (this.matchIdentifiers.length > 0) {
           yield [`var ${this.matchIdentifiers.join(",")};\n`, arm.startPosition];

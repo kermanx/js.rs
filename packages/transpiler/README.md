@@ -74,7 +74,7 @@ Status summary for Rust language features in the current transpiler implementati
 - [x] `as` cast expressions are supported.
 - [x] Method turbofish syntax (`foo::<T>()`) is supported.
 - [x] Await expressions (`.await`) are supported.
-- [ ] Try operator (`?`) is supported.
+- [x] Try operator (`?`) is supported.
 
 ## Patterns and matching
 
@@ -88,10 +88,10 @@ Status summary for Rust language features in the current transpiler implementati
 - [x] Or-patterns (`p1 | p2`) are supported.
 - [x] Range patterns are supported.
 - [x] Rest pattern (`..`) in slice patterns is supported.
-- [ ] Pattern guards (`if` guards on match arms) are supported.
-- [ ] Reference patterns (`&pat`, `&mut pat`) are supported.
-- [ ] `@` binding patterns are supported.
-- [ ] Box patterns are supported.
+- [x] Pattern guards (`if` guards on match arms) are supported.
+- [x] Reference patterns (`&pat`, `&mut pat`) are supported.
+- [x] `@` binding patterns are supported.
+- [x] Box patterns are supported.
 
 ## Async and advanced language features
 
