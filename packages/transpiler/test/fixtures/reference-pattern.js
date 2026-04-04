@@ -1,15 +1,15 @@
 import * as _r from "@jsrs/runtime";
 export function reference_pattern(x, y) {
   var out = 0;
-  _m0 = x;
-  if ((a = _r.deref(_m0))) {
+  const _t0 = x;
+  if ((a = _r.deref(_t0))) {
     var a;
     out = a;
   } else {
     out = 0;
   }
-  _m0 = y;
-  if ((b = _r.deref(_m0))) {
+  const _t1 = y;
+  if ((b = _r.deref(_t1))) {
     var b;
     out = out + b;
   } else {
@@ -17,4 +17,3 @@ export function reference_pattern(x, y) {
   }
   return out;
 }
-var _m, _m0, _m1;

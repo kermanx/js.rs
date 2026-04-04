@@ -5,4 +5,3 @@ function id(x) {
 export function method_turbofish() {
   return id(1);
 }
-var _m;

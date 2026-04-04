@@ -6,12 +6,16 @@ export function while_let_loop() {
   var x = Option.Some(2);
   var acc = 0;
   while (true) {
-    _m0 = x;
-    if (!((_m1 = _r.matches(_m0, Option.Some)) && (v = _m1[1]))) break;
+    const _t0 = x;
+    {
+      var _do;
+      const _t1 = _r.matches(_t0, Option.Some);
+      _do = _t1 && (v = _t1[1]);
+    }
+    if (!_do) break;
     var v;
     acc = acc + v;
     x = Option.None;
   }
   return acc;
 }
-var _m, _m0, _m1;

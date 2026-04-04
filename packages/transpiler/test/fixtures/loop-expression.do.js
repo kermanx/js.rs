@@ -4,4 +4,3 @@ export function loop_expression() {
     return 1;
   }
 }
-var _m;

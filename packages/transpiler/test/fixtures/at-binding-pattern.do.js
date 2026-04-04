@@ -1,8 +1,14 @@
 import * as _r from "@jsrs/runtime";
 export function at_binding_pattern(x) {
   return do {
-    _m0 = x;
-    if ((a = _m0) && (_m2 = _r.matches(_m0, Option.Some)) && (v = _m2[1])) {
+    const _t0 = x;
+    if (
+      (a = _t0) &&
+      do {
+        const _t1 = _r.matches(_t0, Option.Some);
+        _t1 && (v = _t1[1]);
+      }
+    ) {
       var a, v;
       v;
     } else {
@@ -10,4 +16,3 @@ export function at_binding_pattern(x) {
     }
   };
 }
-var _m, _m0, _m1, _m2;

@@ -9,12 +9,22 @@ Analyzer.prototype.exec_if_statement = function (node) {
   var factory = this.factory;
   var test = this.exec_expression(node.test).get_to_boolean(this);
   var [maybe_consequent, maybe_alternate] = _r.destruct(do {
-    _m0 = test.test_truthy();
-    if ((_m1 = _r.matches(_m0, Some)) && _m1[1] === true) {
+    const _t0 = test.test_truthy();
+    if (
+      do {
+        const _t1 = _r.matches(_t0, Some);
+        _t1 && _t1[1] === true;
+      }
+    ) {
       [true, false];
-    } else if ((_m1 = _r.matches(_m0, Some)) && _m1[1] === false) {
+    } else if (
+      do {
+        const _t2 = _r.matches(_t0, Some);
+        _t2 && _t2[1] === false;
+      }
+    ) {
       [false, true];
-    } else if ((None = _m0)) {
+    } else if ((None = _t0)) {
       var None;
       [true, true];
     }
@@ -37,11 +47,16 @@ Analyzer.prototype.exec_if_statement = function (node) {
       );
       this.exec_statement(node.consequent);
       var conditional_scope = this.pop_cf_scope_and_get_mut();
-      _m0 = conditional_scope.kind;
+      const _t3 = conditional_scope.kind;
       if (
-        (_m1 = _r.matches(_m0, CfScopeKind.ExitBlocker)) &&
-        (_m2 = _r.matches(_m1[1], Some)) &&
-        (stopped_exit = _m2[1])
+        do {
+          const _t4 = _r.matches(_t3, CfScopeKind.ExitBlocker);
+          _t4 &&
+            do {
+              const _t5 = _r.matches(_t4[1], Some);
+              _t5 && (stopped_exit = _t5[1]);
+            };
+        }
       ) {
         var stopped_exit;
         {
@@ -65,17 +80,27 @@ Analyzer.prototype.exec_if_statement = function (node) {
         false,
         true,
       );
-      _m0 = node.alternate;
-      if ((_m1 = _r.matches(_m0, Some)) && (alternate = _m1[1])) {
+      const _t6 = node.alternate;
+      if (
+        do {
+          const _t7 = _r.matches(_t6, Some);
+          _t7 && (alternate = _t7[1]);
+        }
+      ) {
         var alternate;
         {
           this.exec_statement(alternate);
           var conditional_scope = this.pop_cf_scope_and_get_mut();
-          _m0 = conditional_scope.kind;
+          const _t8 = conditional_scope.kind;
           if (
-            (_m1 = _r.matches(_m0, CfScopeKind.ExitBlocker)) &&
-            (_m2 = _r.matches(_m1[1], Some)) &&
-            (stopped_exit = _m2[1])
+            do {
+              const _t9 = _r.matches(_t8, CfScopeKind.ExitBlocker);
+              _t9 &&
+                do {
+                  const _t10 = _r.matches(_t9[1], Some);
+                  _t10 && (stopped_exit = _t10[1]);
+                };
+            }
           ) {
             var stopped_exit;
             {
@@ -97,13 +122,18 @@ Analyzer.prototype.exec_if_statement = function (node) {
   return do {
     if (both_exit) {
       {
-        _m0 = this.exit_to_impl(
+        const _t11 = this.exit_to_impl(
           exit_target_inner,
           this.scope_context.cf.stack.len(),
           true,
           acc_dep,
         );
-        if ((_m1 = _r.matches(_m0, Some)) && (acc_dep = _m1[1])) {
+        if (
+          do {
+            const _t12 = _r.matches(_t11, Some);
+            _t12 && (acc_dep = _t12[1]);
+          }
+        ) {
           var acc_dep;
           {
             this.exit_to_impl(
@@ -152,13 +182,14 @@ Transformer.prototype.transform_if_statement = function (node) {
   return do {
     if (need_test_val) {
       {
-        _m0 = [consequent, alternate];
+        const _t13 = [consequent, alternate];
         if (
-          _m0.length === 2 &&
-          (_m1 = _m0) &&
-          (_m2 = _r.matches(_m1[0], Some)) &&
-          (consequent = _m2[1]) &&
-          (alternate = _m1[1])
+          _t13.length === 2 &&
+          do {
+            const _t14 = _r.matches(_t13[0], Some);
+            _t14 && (consequent = _t14[1]);
+          } &&
+          (alternate = _t13[1])
         ) {
           var consequent, alternate;
           {
@@ -172,11 +203,12 @@ Transformer.prototype.transform_if_statement = function (node) {
             );
           }
         } else if (
-          _m0.length === 2 &&
-          (_m1 = _m0) &&
-          (None = _m1[0]) &&
-          (_m2 = _r.matches(_m1[1], Some)) &&
-          (alternate = _m2[1])
+          _t13.length === 2 &&
+          (None = _t13[0]) &&
+          do {
+            const _t15 = _r.matches(_t13[1], Some);
+            _t15 && (alternate = _t15[1]);
+          }
         ) {
           var None, alternate;
           Some(
@@ -187,12 +219,7 @@ Transformer.prototype.transform_if_statement = function (node) {
               None,
             ),
           );
-        } else if (
-          _m0.length === 2 &&
-          (_m1 = _m0) &&
-          (None = _m1[0]) &&
-          (None = _m1[1])
-        ) {
+        } else if (_t13.length === 2 && (None = _t13[0]) && (None = _t13[1])) {
           var None, None;
           test.map((test) =>
             this.ast_builder.statement_expression(test.span(), test),
@@ -201,8 +228,13 @@ Transformer.prototype.transform_if_statement = function (node) {
       }
     } else {
       var statements = this.ast_builder.vec();
-      _m0 = test;
-      if ((_m1 = _r.matches(_m0, Some)) && (test = _m1[1])) {
+      const _t16 = test;
+      if (
+        do {
+          const _t17 = _r.matches(_t16, Some);
+          _t17 && (test = _t17[1]);
+        }
+      ) {
         var test;
         {
           statements.push(
@@ -210,15 +242,25 @@ Transformer.prototype.transform_if_statement = function (node) {
           );
         }
       }
-      _m0 = consequent;
-      if ((_m1 = _r.matches(_m0, Some)) && (consequent = _m1[1])) {
+      const _t18 = consequent;
+      if (
+        do {
+          const _t19 = _r.matches(_t18, Some);
+          _t19 && (consequent = _t19[1]);
+        }
+      ) {
         var consequent;
         {
           statements.push(consequent);
         }
       }
-      _m0 = alternate;
-      if ((_m1 = _r.matches(_m0, Some)) && (alternate = _m1[1])) {
+      const _t20 = alternate;
+      if (
+        do {
+          const _t21 = _r.matches(_t20, Some);
+          _t21 && (alternate = _t21[1]);
+        }
+      ) {
         var alternate;
         {
           statements.push(alternate);
@@ -234,4 +276,3 @@ Transformer.prototype.transform_if_statement = function (node) {
     }
   };
 };
-var _m, _m0, _m1, _m2;

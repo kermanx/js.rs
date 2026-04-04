@@ -1,12 +1,11 @@
 import * as _r from "@jsrs/runtime";
 export function array_pattern(arr) {
-  _m0 = arr;
+  const _t0 = arr;
   if (
-    _m0.length >= 4 &&
-    (_m1 = _m0) &&
-    _m1[0] === 1 &&
-    (a = _m1[1]) &&
-    (b = _m1.at(-2)) &&
+    _t0.length >= 4 &&
+    _t0[0] === 1 &&
+    (a = _t0[1]) &&
+    (b = _t0.at(-2)) &&
     true
   ) {
     var a, b;
@@ -15,4 +14,3 @@ export function array_pattern(arr) {
     log("other");
   }
 }
-var _m, _m0, _m1;

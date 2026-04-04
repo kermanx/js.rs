@@ -5,4 +5,3 @@ export function closures(x) {
   };
   var t = (x) => this.value + 1;
 }
-var _m;

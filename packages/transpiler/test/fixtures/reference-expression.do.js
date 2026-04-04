@@ -26,4 +26,3 @@ export function main() {
     _r.ref(b, (v) => (b = v)),
   );
 }
-var _m;

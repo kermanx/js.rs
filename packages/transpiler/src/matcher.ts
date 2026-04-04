@@ -7,9 +7,10 @@ declare module "./transpiler" {
   interface Transpiler extends T {}
 }
 
+const SIMPLE_IDENTIFIER_RE = /^[a-z_$][\w$]*$/i;
+
 const _T = defineTranspilerComponent({
   * PatMatcher(pat: SyntaxNode, target: string): Code {
-    this.matchDepth++;
     switch (pat.type) {
       case "_":
         yield `true`;
@@ -53,29 +54,37 @@ const _T = defineTranspilerComponent({
       default:
         throw new Error(`Not implemented: ${pat.type}`);
     }
-    this.matchDepth--;
   },
 
   * PatTupleStructMatcher(pat: SyntaxNode, target: string): Code {
     const variant = pat.namedChildren[0];
-    yield `((_m${this.matchDepth} = _r.matches(${target}, `;
+    const temp = this.newTempVar(pat);
+    yield "(do {";
+    yield `const ${temp} = _r.matches(${target}, `;
     if (variant.type === "scoped_identifier") {
       yield* this.ScopedIdent(variant);
     }
     else {
       yield variant;
     }
-    yield "))";
+    yield `);`;
 
-    for (let i = 1; i < pat.namedChildren.length; i++) {
-      yield `&&`;
-      yield* this.PatMatcher(
-        pat.namedChildren[i],
-        `_m${this.matchDepth}[${i}]`,
-      );
+    if (pat.namedChildren.length <= 1) {
+      yield `${temp};`;
+    }
+    else {
+      yield `${temp}`;
+      for (let i = 1; i < pat.namedChildren.length; i++) {
+        yield `&&`;
+        yield* this.PatMatcher(
+          pat.namedChildren[i],
+          `${temp}[${i}]`,
+        );
+      }
+      yield `;`;
     }
 
-    yield ")";
+    yield "})";
   },
 
   * PatIdentMatcher(pat: SyntaxNode, target: string): Code {
@@ -150,8 +159,18 @@ const _T = defineTranspilerComponent({
       }
     }
 
-    yield `(${target}.length ${hasEllipsis ? ">=" : "==="} ${elements.length} &&`;
-    yield `(_m${this.matchDepth} = ${target})`;
+    const useInlineTarget = SIMPLE_IDENTIFIER_RE.test(target);
+    const temp = useInlineTarget ? target : this.newTempVar(pat);
+
+    if (useInlineTarget) {
+      yield "(";
+    }
+    else {
+      yield "(do {";
+      yield `const ${temp} = ${target};`;
+    }
+
+    yield `${temp}.length ${hasEllipsis ? ">=" : "==="} ${elements.length}`;
 
     for (let i = 0; i < elements.length; i++) {
       const [byEnd, element] = elements[i];
@@ -159,11 +178,16 @@ const _T = defineTranspilerComponent({
       yield* this.PatMatcher(
         element,
         byEnd
-          ? `_m${this.matchDepth}.at(${i - elements.length})`
-          : `_m${this.matchDepth}[${i}]`,
+          ? `${temp}.at(${i - elements.length})`
+          : `${temp}[${i}]`,
       );
     }
 
-    yield ")";
+    if (useInlineTarget) {
+      yield ")";
+    }
+    else {
+      yield ";})";
+    }
   },
 });

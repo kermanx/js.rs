@@ -5,4 +5,3 @@ export function compound_assignment() {
   x *= 3;
   return x;
 }
-var _m;

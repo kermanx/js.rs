@@ -6,4 +6,3 @@ A.new = function (a, b) {
 A.prototype.add = function () {
   return this.a + this.b;
 };
-var _m;

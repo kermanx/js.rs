@@ -23,4 +23,3 @@ function try_then_index(a) {
   }[1];
   return Result.Ok(x);
 }
-var _m;

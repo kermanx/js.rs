@@ -7,18 +7,14 @@ declare module "./transpiler" {
   interface Transpiler extends T {}
 }
 
+const IDENTIFIER_RE = /^[a-z_$][\w$]*$/i;
+
 const _T = defineTranspilerComponent({
   * File(file: SyntaxNode): Code {
     yield "import * as _r from \"@jsrs/runtime\";\n";
     for (const item of file.children) {
       yield* this.Stmt(item);
     }
-    yield "var _m";
-    for (let i = 0; i < this.maxMatchDepth; i++) {
-      yield ",";
-      yield `_m${i}`;
-    }
-    yield ";\n";
   },
 
   * ItemFn(fn: SyntaxNode, isDeclaration = true, isClosure = false): Code {
@@ -226,13 +222,13 @@ const _T = defineTranspilerComponent({
     const alternative = local.childForFieldName("alternative");
     if (alternative) {
       const value = local.childForFieldName("value")!;
-      yield "_m0 = _r.destruct(";
+      const temp = this.newTempVar(local);
+      yield `const ${temp} = _r.destruct(`;
       yield* this.Expr(value);
       yield ");\n";
       yield "if (";
       this.matchIdentifiers = [];
-      this.matchDepth = 0;
-      yield* this.PatMatcher(pattern, "_m0");
+      yield* this.PatMatcher(pattern, temp);
       yield ") {\n";
       if (this.matchIdentifiers.length > 0) {
         yield [`var ${this.matchIdentifiers.join(",")};\n`, local.startPosition];
@@ -659,7 +655,8 @@ const _T = defineTranspilerComponent({
 
   * Match(match: SyntaxNode): Code {
     const value = match.childForFieldName("value")!;
-    yield "_m0 = ";
+    const temp = this.newTempVar(match);
+    yield `const ${temp} = `;
     yield* this.Expr(value);
     yield ";\n";
 
@@ -674,22 +671,21 @@ const _T = defineTranspilerComponent({
         yield isFirst ? ["if (", arm.startPosition] : ["else if (", arm.startPosition];
         isFirst = false;
 
-        this.matchDepth = 0;
         this.matchIdentifiers = [];
 
         // parser fallback for unstable `box pat` syntax: pattern may be parsed as `identifier: box`
         if (pattern.type === "identifier" && pattern.text === "box") {
           const maybeInner = arm.namedChildren.find(child => child.type === "ERROR");
-          if (maybeInner && /^[A-Za-z_$][\\w$]*$/.test(maybeInner.text)) {
+          if (maybeInner && IDENTIFIER_RE.test(maybeInner.text)) {
             this.matchIdentifiers.push(maybeInner.text);
-            yield `(${maybeInner.text} = _r.deref(_m0), true)`;
+            yield `(${maybeInner.text} = _r.deref(${temp}), true)`;
           }
           else {
             yield "true";
           }
         }
         else {
-          yield* this.PatMatcher(pattern, "_m0");
+          yield* this.PatMatcher(pattern, temp);
         }
 
         if (guard) {
@@ -719,13 +715,13 @@ const _T = defineTranspilerComponent({
       const pattern = condition.childForFieldName("pattern")!;
       const value = condition.childForFieldName("value")!;
 
-      yield "_m0 = ";
+      const temp = this.newTempVar(ifExpr);
+      yield `const ${temp} = `;
       yield* this.Expr(value);
       yield ";\n";
       yield "if (";
       this.matchIdentifiers = [];
-      this.matchDepth = 0;
-      yield* this.PatMatcher(pattern, "_m0");
+      yield* this.PatMatcher(pattern, temp);
       yield ") {\n";
       if (this.matchIdentifiers.length > 0) {
         yield [`var ${this.matchIdentifiers.join(",")};\n`, ifExpr.startPosition];
@@ -773,14 +769,14 @@ const _T = defineTranspilerComponent({
       const pattern = condition.childForFieldName("pattern")!;
       const value = condition.childForFieldName("value")!;
 
-      this.matchDepth = 0;
       this.matchIdentifiers = [];
+      const temp = this.newTempVar(whileExpr);
       yield "while (true) {\n";
-      yield "_m0 = ";
+      yield `const ${temp} = `;
       yield* this.Expr(value);
       yield ";\n";
       yield "if (!(";
-      yield* this.PatMatcher(pattern, "_m0");
+      yield* this.PatMatcher(pattern, temp);
       yield ")) break;\n";
       if (this.matchIdentifiers.length > 0) {
         yield [`var ${this.matchIdentifiers.join(",")};\n`, whileExpr.startPosition];

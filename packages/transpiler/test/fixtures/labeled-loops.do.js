@@ -12,4 +12,3 @@ export function labeled_loops() {
   }
   return i;
 }
-var _m;

@@ -6,4 +6,3 @@ export function while_loop() {
   }
   return i;
 }
-var _m;

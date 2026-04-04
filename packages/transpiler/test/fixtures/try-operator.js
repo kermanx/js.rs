@@ -33,4 +33,3 @@ function try_then_index(a) {
   var x = _do5;
   return Result.Ok(x);
 }
-var _m;

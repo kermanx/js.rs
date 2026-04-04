@@ -2,8 +2,8 @@ import * as _r from "@jsrs/runtime";
 export function box_pattern(x) {
   {
     var _do;
-    _m0 = x;
-    if (((a = _r.deref(_m0)), true)) {
+    const _t0 = x;
+    if (((a = _r.deref(_t0)), true)) {
       var a;
       _do = a;
     } else {
@@ -12,4 +12,3 @@ export function box_pattern(x) {
   }
   return _do;
 }
-var _m;

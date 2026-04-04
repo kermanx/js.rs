@@ -6,4 +6,3 @@ export function for_loop() {
   }
   return acc;
 }
-var _m;

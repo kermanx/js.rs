@@ -8,4 +8,3 @@ import { x } from "t";
 export { x };
 export * from "s";
 import * as r from "r";
-var _m;
