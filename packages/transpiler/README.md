@@ -37,13 +37,13 @@ Status summary for Rust language features in the current transpiler implementati
 - [x] `else if` / `else` branches are transpiled.
 - [x] `match` expressions are transpiled.
 - [x] `return` expressions are transpiled.
-- [ ] `loop` expressions are supported.
-- [ ] `while` loops are supported.
-- [ ] `while let` loops are supported.
-- [ ] `for` loops are supported.
-- [ ] `break` expressions are supported.
-- [ ] `continue` expressions are supported.
-- [ ] Labeled loops are supported.
+- [x] `loop` expressions are supported.
+- [x] `while` loops are supported.
+- [x] `while let` loops are supported.
+- [x] `for` loops are supported.
+- [x] `break` expressions are supported.
+- [x] `continue` expressions are supported.
+- [x] Labeled loops are supported.
 
 ## Expressions and operators
 

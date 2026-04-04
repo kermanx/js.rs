@@ -189,6 +189,21 @@ const _T = defineTranspilerComponent({
       case "if_expression":
         yield* this.If(node);
         break;
+      case "loop_expression":
+        yield* this.Loop(node);
+        break;
+      case "while_expression":
+        yield* this.While(node);
+        break;
+      case "for_expression":
+        yield* this.For(node);
+        break;
+      case "break_expression":
+        yield* this.Break(node);
+        break;
+      case "continue_expression":
+        yield* this.Continue(node);
+        break;
       case "empty_statement":
         break;
       default:
@@ -302,9 +317,18 @@ const _T = defineTranspilerComponent({
       case "match_expression":
       case "block":
       case "if_expression":
+      case "loop_expression":
+      case "while_expression":
+      case "for_expression":
         yield "(do {";
         yield* this.Stmt(expr);
         yield "})";
+        break;
+      case "break_expression":
+        yield* this.Break(expr);
+        break;
+      case "continue_expression":
+        yield* this.Continue(expr);
         break;
       default:
         throw new Error(`Not implemented: ${expr.type}`);
@@ -585,6 +609,102 @@ const _T = defineTranspilerComponent({
     if (alternative) {
       yield "else ";
       yield* this.Stmt(alternative.namedChildren[0]);
+    }
+  },
+
+  * Loop(loopExpr: SyntaxNode): Code {
+    const body = loopExpr.childForFieldName("body") || loopExpr.namedChildren[0];
+    const label = loopExpr.childForFieldName("label");
+    if (label) {
+      const raw = (label.namedChildren[0] || label).text;
+      yield raw.startsWith("'") ? raw.slice(1) : raw;
+      yield ": ";
+    }
+    yield "while (true) ";
+    yield* this.Block(body!);
+  },
+
+  * While(whileExpr: SyntaxNode): Code {
+    const condition = whileExpr.childForFieldName("condition")!;
+    const body = whileExpr.childForFieldName("body") || whileExpr.namedChildren.at(-1)!;
+    const label = whileExpr.childForFieldName("label");
+    if (label) {
+      const raw = (label.namedChildren[0] || label).text;
+      yield raw.startsWith("'") ? raw.slice(1) : raw;
+      yield ": ";
+    }
+
+    if (condition.type === "let_condition") {
+      const pattern = condition.childForFieldName("pattern")!;
+      const value = condition.childForFieldName("value")!;
+
+      this.matchDepth = 0;
+      this.matchIdentifiers = [];
+      yield "while (true) {\n";
+      yield "_m0 = ";
+      yield* this.Expr(value);
+      yield ";\n";
+      yield "if (!(";
+      yield* this.PatMatcher(pattern, "_m0");
+      yield ")) break;\n";
+      if (this.matchIdentifiers.length > 0) {
+        yield [`var ${this.matchIdentifiers.join(",")};\n`, whileExpr.startPosition];
+      }
+
+      if (body.type === "block") {
+        for (const child of body.namedChildren) {
+          yield* this.Stmt(child);
+        }
+      }
+      else {
+        yield* this.Stmt(body);
+      }
+      yield "}";
+    }
+    else {
+      yield "while (";
+      yield* this.Expr(condition);
+      yield ") ";
+      yield* this.Block(body);
+    }
+  },
+
+  * For(forExpr: SyntaxNode): Code {
+    const pattern = forExpr.childForFieldName("pattern")!;
+    const value = forExpr.childForFieldName("value")!;
+    const body = forExpr.childForFieldName("body") || forExpr.namedChildren.at(-1)!;
+    const label = forExpr.childForFieldName("label");
+
+    if (label) {
+      const raw = (label.namedChildren[0] || label).text;
+      yield raw.startsWith("'") ? raw.slice(1) : raw;
+      yield ": ";
+    }
+    yield "for (var ";
+    yield* this.Pat(pattern);
+    yield " of ";
+    yield* this.Expr(value);
+    yield ") ";
+    yield* this.Block(body);
+  },
+
+  * Break(breakExpr: SyntaxNode): Code {
+    yield "break";
+    const label = breakExpr.childForFieldName("label");
+    if (label) {
+      yield " ";
+      const raw = (label.namedChildren[0] || label).text;
+      yield raw.startsWith("'") ? raw.slice(1) : raw;
+    }
+  },
+
+  * Continue(continueExpr: SyntaxNode): Code {
+    yield "continue";
+    const label = continueExpr.childForFieldName("label");
+    if (label) {
+      yield " ";
+      const raw = (label.namedChildren[0] || label).text;
+      yield raw.startsWith("'") ? raw.slice(1) : raw;
     }
   },
 
