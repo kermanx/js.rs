@@ -29,7 +29,7 @@ describe("transpiler", () => {
         throw e;
       }
       await expect(prettified).toMatchFileSnapshot(
-        `${snapshotsDir}/${name}.jsrs.do.js`,
+        `${snapshotsDir}/${name}.do.js`,
       );
 
       try {
@@ -45,7 +45,7 @@ describe("transpiler", () => {
         throw e;
       }
       await expect(prettified).toMatchFileSnapshot(
-        `${snapshotsDir}/${name}.jsrs.js`,
+        `${snapshotsDir}/${name}.js`,
       );
     }
   });
