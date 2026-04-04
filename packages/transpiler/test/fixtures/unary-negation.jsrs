@@ -1,4 +1,0 @@
-pub fn unary_negation() -> i32 {
-  let x = 1;
-  -x
-}

@@ -1,0 +1,15 @@
+pub fn reference_pattern(x: &number, y: &mut number) -> number {
+  let mut out = 0;
+
+  match x {
+    &a => out = a,
+    _ => out = 0,
+  }
+
+  match y {
+    &mut b => out = out + b,
+    _ => out = out,
+  }
+
+  out
+}

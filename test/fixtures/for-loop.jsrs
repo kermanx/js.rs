@@ -1,0 +1,7 @@
+pub fn for_loop() -> number {
+  let mut acc = 0;
+  for x in [1, 2, 3] {
+    acc = acc + x;
+  }
+  acc
+}

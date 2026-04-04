@@ -1,0 +1,10 @@
+{
+  "name": "@jsrs/test",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-proposal-do-expressions": "^7.28.6",
+    "typescript": "^6.0.2"
+  }
+}

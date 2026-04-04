@@ -1,0 +1,10 @@
+pub fn break_expression() -> number {
+  let mut i = 0;
+  loop {
+    if i > 2 {
+      break;
+    }
+    i = i + 1;
+  }
+  i
+}

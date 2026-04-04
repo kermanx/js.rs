@@ -1,7 +1,0 @@
-pub fn while_loop() -> i32 {
-  let mut i = 0;
-  while i < 3 {
-    i = i + 1;
-  }
-  i
-}

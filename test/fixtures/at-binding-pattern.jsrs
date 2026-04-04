@@ -1,0 +1,8 @@
+
+
+pub fn at_binding_pattern(x: Option<number>) -> number {
+  match x {
+    a @ Option::Some(v) => v,
+    _ => 0,
+  }
+}

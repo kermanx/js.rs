@@ -1,0 +1,7 @@
+fn id(x: number) -> number {
+  x
+}
+
+pub fn method_turbofish() -> number {
+  id::<number>(1)
+}

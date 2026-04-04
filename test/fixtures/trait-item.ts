@@ -1,0 +1,10 @@
+//trait Trait {
+//  type AssociatedType = number;
+//  const CONST_ITEM: number = 23;
+//  fn static_method() {
+//    log();
+//  }
+//  fn method(&self);
+//}
+(undefined as any)
+

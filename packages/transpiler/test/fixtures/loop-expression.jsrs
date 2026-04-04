@@ -1,5 +1,0 @@
-pub fn loop_expression() -> i32 {
-  loop {
-    return 1;
-  }
-}

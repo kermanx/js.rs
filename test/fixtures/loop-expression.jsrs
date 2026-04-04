@@ -1,0 +1,5 @@
+pub fn loop_expression() -> number {
+  loop {
+    return 1;
+  }
+}

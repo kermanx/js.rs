@@ -1,0 +1,16 @@
+pub enum Option<T> {
+  Some(T),
+  None,
+}
+
+pub fn while_let_loop() -> number {
+  let mut x = Option::Some(2);
+  let mut acc = 0;
+
+  while let Option::Some(v) = x {
+    acc = acc + v;
+    x = Option::None;
+  }
+
+  acc
+}

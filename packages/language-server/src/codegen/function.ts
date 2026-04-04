@@ -1,6 +1,6 @@
 import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
-import { generateBlock, generateExpression, generateIdentifier, generateSelf } from ".";
+import { generateBlock, generateExpression, generateIdentifier, generatePattern, generateSelf } from ".";
 import { context } from "./context";
 import { generateType, generateTypeParameters } from "./type";
 import { between, generateChildren } from "./utils";
@@ -33,7 +33,20 @@ export function* generateFunction(
   }
 
   const parameters = node.childForFieldName("parameters")!;
-  yield* generateChildren(parameters, child => generateParameter(child, selfType));
+  if (kind === FunctionKind.Closure) {
+    yield "(";
+    let first = true;
+    for (const child of parameters.namedChildren) {
+      if (!first)
+        yield ", ";
+      first = false;
+      yield* generateParameter(child, selfType);
+    }
+    yield ")";
+  }
+  else {
+    yield* generateChildren(parameters, child => generateParameter(child, selfType));
+  }
 
   const type = node.childForFieldName("return_type");
   if (type) {
@@ -79,7 +92,7 @@ function* generateParameter(node: SyntaxNode, selfType: SyntaxNode | undefined):
   const pattern = node.childForFieldName("pattern")!;
   const type = node.childForFieldName("type");
 
-  yield pattern;
+  yield* generatePattern(pattern);
   yield* between(node, pattern, type);
   if (type) {
     yield* generateType(type);

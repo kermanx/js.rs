@@ -1,0 +1,3 @@
+pub const fn const_fn(x: number) -> number {
+  x + 1
+}

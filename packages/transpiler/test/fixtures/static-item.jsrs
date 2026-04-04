@@ -1,3 +1,0 @@
-pub static IMMUT: i32 = 10;
-
-static mut COUNTER: i32 = 0;

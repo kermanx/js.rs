@@ -10,6 +10,7 @@ import { generateMacroInvocation } from "./macro";
 import { generateMatch, getPatternBindings } from "./match";
 import { generatePrelude } from "./prelude";
 import { generateStruct, generateStructExpression } from "./struct";
+import { generateType } from "./type";
 import { generateUse } from "./use";
 import { between, generateChildren, wrapWith } from "./utils";
 
@@ -92,15 +93,20 @@ function* generateLocal(node: SyntaxNode): Generator<Code> {
   yield mutable ? "let " : "const ";
 
   const pattern = node.childForFieldName("pattern")!;
-  yield pattern;
-
-  const type = node.childForFieldName("type")!;
-  if (type) {
-    yield `: `;
-    yield type;
+  if (isSupportedPattern(pattern)) {
+    yield* generatePattern(pattern);
+  }
+  else {
+    yield `__jsrs_pattern_${node.startIndex}`;
   }
 
-  const value = node.childForFieldName("value")!;
+  const type = node.childForFieldName("type");
+  if (type) {
+    yield `: `;
+    yield* generateType(type);
+  }
+
+  const value = node.childForFieldName("value");
   if (value) {
     yield ` = `;
     yield* generateExpression(value);
@@ -110,8 +116,12 @@ function* generateLocal(node: SyntaxNode): Generator<Code> {
 export function* generateExpression(node: SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "integer_literal":
+    case "float_literal":
     case "boolean_literal":
     case "string_literal":
+    case "char_literal":
+    case "null_literal":
+    case "undefined_literal":
       yield node;
       break;
     case "identifier":
@@ -130,6 +140,9 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
       break;
     case "assignment_expression":
       yield* generateAssignmentExpression(node);
+      break;
+    case "compound_assignment_expr":
+      yield* generateCompoundAssignmentExpression(node);
       break;
     case "call_expression":
       yield* generateCallExpression(node);
@@ -152,6 +165,36 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
     case "range_expression":
       yield* generateRangeExpression(node);
       break;
+    case "await_expression":
+      yield* generateAwaitExpression(node);
+      break;
+    case "async_block":
+      yield* generateAsyncBlockExpression(node);
+      break;
+    case "const_block":
+      yield* generateConstBlockExpression(node);
+      break;
+    case "type_cast_expression":
+      yield* generateTypeCastExpression(node);
+      break;
+    case "try_expression":
+      yield* generateTryExpression(node);
+      break;
+    case "for_expression":
+      yield* generateForExpression(node);
+      break;
+    case "while_expression":
+      yield* generateWhileExpression(node);
+      break;
+    case "loop_expression":
+      yield* generateLoopExpression(node);
+      break;
+    case "break_expression":
+      yield* generateBreakExpression(node);
+      break;
+    case "continue_expression":
+      yield* generateContinueExpression(node);
+      break;
     case "reference_expression":
       yield* generateReferenceExpression(node);
       break;
@@ -173,15 +216,17 @@ export function* generateExpression(node: SyntaxNode): Generator<Code> {
       context.needCaptureReturn--;
       break;
     case "match_expression":
+      yield* generateMatch(node);
+      break;
     case "if_expression":
-      // TODO:
-      // yield "(() => ";
-      // yield ")()";
+      yield* generateIfExpression(node);
       break;
 
     case "ERROR":
-      yield* generateBlock(node, false);
       break;
+      break;
+    default:
+      yield "(undefined as any)";
   }
 }
 
@@ -207,6 +252,7 @@ export function* generateIdentifier(node: SyntaxNode): Generator<Code> {
   switch (node.type) {
     case "identifier":
     case "field_identifier":
+    case "shorthand_field_identifier":
     case "type_identifier":
       yield node;
       break;
@@ -224,6 +270,90 @@ export function* generateScopedIdentifier(node: SyntaxNode): Generator<Code> {
     }
     first = false;
     yield* generateIdentifier(child);
+  }
+}
+
+export function* generatePattern(node: SyntaxNode): Generator<Code> {
+  switch (node.type) {
+    case "identifier":
+    case "field_identifier":
+    case "shorthand_field_identifier":
+      yield* generateIdentifier(node);
+      break;
+    case "tuple_pattern":
+    case "slice_pattern": {
+      yield "[";
+      let first = true;
+      for (const child of node.namedChildren) {
+        if (!first)
+          yield ", ";
+        first = false;
+        yield* generatePattern(child);
+      }
+      yield "]";
+      break;
+    }
+    case "struct_pattern": {
+      yield "{";
+      let first = true;
+      for (const child of node.namedChildren) {
+        if (child.type === "remaining_field_pattern")
+          continue;
+        if (child.type !== "field_pattern")
+          continue;
+        if (!first)
+          yield ", ";
+        first = false;
+        const name = child.childForFieldName("name");
+        const pattern = child.childForFieldName("pattern");
+        if (name) {
+          yield* generateIdentifier(name);
+          if (pattern && pattern.text !== name.text) {
+            yield ": ";
+            yield* generatePattern(pattern);
+          }
+        }
+      }
+      yield "}";
+      break;
+    }
+    case "reference_pattern":
+    case "ref_pattern":
+    case "mut_pattern":
+    case "captured_pattern": {
+      const inner = node.namedChildren[0];
+      if (inner) {
+        yield* generatePattern(inner);
+      }
+      else {
+        yield "_";
+      }
+      break;
+    }
+    case "wildcard_pattern":
+      yield "_";
+      break;
+    default:
+      yield node.text;
+  }
+}
+
+function isSupportedPattern(node: SyntaxNode): boolean {
+  switch (node.type) {
+    case "identifier":
+    case "field_identifier":
+    case "shorthand_field_identifier":
+    case "tuple_pattern":
+    case "slice_pattern":
+    case "struct_pattern":
+    case "reference_pattern":
+    case "ref_pattern":
+    case "mut_pattern":
+    case "captured_pattern":
+    case "wildcard_pattern":
+      return true;
+    default:
+      return false;
   }
 }
 
@@ -245,6 +375,16 @@ function* generateAssignmentExpression(node: SyntaxNode): Generator<Code> {
 
   yield* generateExpression(left);
   yield ` = `;
+  yield* generateExpression(right);
+}
+
+function* generateCompoundAssignmentExpression(node: SyntaxNode): Generator<Code> {
+  const left = node.childForFieldName("left")!;
+  const right = node.childForFieldName("right")!;
+  const operator = node.childForFieldName("operator")?.text ?? "+=";
+
+  yield* generateExpression(left);
+  yield ` ${operator} `;
   yield* generateExpression(right);
 }
 
@@ -326,6 +466,180 @@ function* generateRangeExpression(node: SyntaxNode): Generator<Code> {
   yield `)`;
 }
 
+function* generateAwaitExpression(node: SyntaxNode): Generator<Code> {
+  const value = node.namedChildren[0];
+  yield "await ";
+  if (value) {
+    yield* generateExpression(value);
+  }
+  else {
+    yield "undefined";
+  }
+}
+
+function* generateAsyncBlockExpression(node: SyntaxNode): Generator<Code> {
+  const body = node.namedChildren[0];
+  yield "(async () => ";
+  if (body) {
+    yield* generateBlock(body, true);
+  }
+  else {
+    yield "{}";
+  }
+  yield ")()";
+}
+
+function* generateConstBlockExpression(node: SyntaxNode): Generator<Code> {
+  const body = node.childForFieldName("body") ?? node.namedChildren[0];
+  yield "(() => ";
+  if (body) {
+    yield* generateBlock(body, true);
+  }
+  else {
+    yield "{}";
+  }
+  yield ")()";
+}
+
+function* generateTypeCastExpression(node: SyntaxNode): Generator<Code> {
+  const value = node.childForFieldName("value");
+  const type = node.childForFieldName("type");
+  yield "(";
+  if (value) {
+    yield* generateExpression(value);
+  }
+  else {
+    yield "undefined";
+  }
+  yield " as ";
+  if (type) {
+    yield* generateType(type);
+  }
+  else {
+    yield "unknown";
+  }
+  yield ")";
+}
+
+function* generateTryExpression(node: SyntaxNode): Generator<Code> {
+  const value = node.namedChildren[0];
+  if (value) {
+    yield* generateExpression(value);
+  }
+  else {
+    yield "undefined as any";
+  }
+}
+
+function* generateForExpression(node: SyntaxNode): Generator<Code> {
+  const pattern = node.childForFieldName("pattern");
+  const value = node.childForFieldName("value");
+  const body = node.childForFieldName("body");
+
+  yield "for (const ";
+  if (pattern && isSupportedPattern(pattern)) {
+    yield* generatePattern(pattern);
+  }
+  else {
+    yield `__jsrs_item_${node.startIndex}`;
+  }
+  yield " of ";
+  if (value) {
+    yield* generateExpression(value);
+  }
+  else {
+    yield "[]";
+  }
+  yield ") ";
+  if (body) {
+    yield* generateStatement(body);
+  }
+  else {
+    yield "{}";
+  }
+}
+
+function* generateWhileExpression(node: SyntaxNode): Generator<Code> {
+  const condition = node.childForFieldName("condition");
+  const body = node.childForFieldName("body");
+  if (condition?.type === "let_condition") {
+    const pattern = condition.childForFieldName("pattern");
+    const value = condition.childForFieldName("value");
+    yield "while (";
+    if (value) {
+      yield* generateExpression(value);
+    }
+    else {
+      yield "undefined";
+    }
+    yield ") {";
+    if (pattern) {
+      const bindings = [...getPatternBindings(pattern)];
+      for (const binding of bindings) {
+        yield " const ";
+        yield binding;
+        yield " = undefined as any;";
+      }
+      yield " ";
+    }
+    if (body) {
+      yield* generateBlock(body, false);
+    }
+    yield "}";
+    return;
+  }
+
+  yield "while (";
+  if (condition) {
+    yield* generateExpression(condition);
+  }
+  else {
+    yield "true";
+  }
+  yield ") ";
+  if (body) {
+    yield* generateStatement(body);
+  }
+  else {
+    yield "{}";
+  }
+}
+
+function* generateLoopExpression(node: SyntaxNode): Generator<Code> {
+  const body = node.childForFieldName("body") ?? node.namedChildren[0];
+  yield "while (true) ";
+  if (body) {
+    yield* generateStatement(body);
+  }
+  else {
+    yield "{}";
+  }
+}
+
+function* generateBreakExpression(node: SyntaxNode): Generator<Code> {
+  const label = node.childForFieldName("label");
+  yield "break";
+  if (label) {
+    yield " ";
+    yield label.text.replace(/^'/, "");
+  }
+}
+
+function* generateContinueExpression(node: SyntaxNode): Generator<Code> {
+  const label = node.childForFieldName("label");
+  yield "continue";
+  if (label) {
+    yield " ";
+    yield label.text.replace(/^'/, "");
+  }
+}
+
+function* generateIfExpression(node: SyntaxNode): Generator<Code> {
+  yield "(() => { ";
+  yield* generateIf(node);
+  yield " })()";
+}
+
 function* generateReferenceExpression(node: SyntaxNode): Generator<Code> {
   const isMut = node.descendantsOfType("mutable_specifier").length > 0;
   const value = node.childForFieldName("value")!;
@@ -381,23 +695,19 @@ function* generateIf(node: SyntaxNode): Generator<Code> {
     const pattern = condition.childForFieldName("pattern")!;
     const value = condition.childForFieldName("value")!;
 
-    yield "if (__JSRS_any(";
+    yield "if (";
     yield* generateExpression(value);
-    yield "))";
+    yield ")";
 
     const bindings = [...getPatternBindings(pattern)];
     if (bindings.length) {
-      yield "{ const ";
-      let isFirst = true;
+      yield "{";
       for (const binding of bindings) {
-        if (!isFirst) {
-          yield ", ";
-        }
-        isFirst = false;
+        yield " const ";
         yield binding;
-        yield "!";
+        yield " = undefined as any;";
       }
-      yield "; ";
+      yield " ";
     }
     yield* generateStatement(consequence);
     if (bindings.length) {

@@ -1,0 +1,6 @@
+pub fn closures(x: number) {
+  let s = |a: number, b: number| -> number {
+    a + b
+  };
+  let t = |x| self.value + 1;
+}

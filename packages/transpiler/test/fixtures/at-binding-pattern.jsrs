@@ -1,8 +1,0 @@
-
-
-pub fn at_binding_pattern(x: Option<i32>) -> i32 {
-  match x {
-    a @ Option::Some(v) => v,
-    _ => 0,
-  }
-}

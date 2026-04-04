@@ -1,0 +1,4 @@
+pub fn unary_negation() -> number {
+  let x = 1;
+  -x
+}

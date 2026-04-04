@@ -1,0 +1,13 @@
+impl A {
+  const CONST_ITEM: number = 23;
+
+  type AssociatedType = number;
+
+  pub fn new(a: number, b: number) -> A {
+    A { a, b }
+  }
+
+  pub fn add(&self) -> number {
+    self.a + self.b
+  }
+}

@@ -1,0 +1,4 @@
+pub struct A {
+  a: number,
+  b: number,
+}

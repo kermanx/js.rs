@@ -1,0 +1,3 @@
+pub async fn async_fn(x: number) -> number {
+  x + 1
+}

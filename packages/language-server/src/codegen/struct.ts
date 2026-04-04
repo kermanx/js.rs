@@ -66,6 +66,11 @@ export function* generateStructExpression(node: SyntaxNode): Generator<Code> {
       if (value)
         yield* generateExpression(value);
     }
+    else if (child.type === "shorthand_field_initializer") {
+      yield child;
+      yield `: `;
+      yield child;
+    }
   });
   yield ")";
 }

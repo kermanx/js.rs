@@ -1,7 +1,0 @@
-pub fn for_loop() -> i32 {
-  let mut acc = 0;
-  for x in [1, 2, 3] {
-    acc = acc + x;
-  }
-  acc
-}

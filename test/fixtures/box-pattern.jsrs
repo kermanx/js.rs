@@ -1,0 +1,6 @@
+pub fn box_pattern(x: number) -> number {
+  match x {
+    box a => a,
+    _ => 0,
+  }
+}
