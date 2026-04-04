@@ -1,0 +1,6 @@
+pub fn const_block() -> i32 {
+  let x = const {
+    1 + 2
+  };
+  x
+}

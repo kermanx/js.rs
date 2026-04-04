@@ -22,13 +22,22 @@ const _T = defineTranspilerComponent({
       yield "export ";
     }
 
+    const modifiers = fn.namedChildren.find(child => child.type === "function_modifiers")?.text || "";
+    const isAsync = modifiers.includes("async");
+
     if (!isClosure) {
+      if (isAsync) {
+        yield "async ";
+      }
       yield "function ";
 
       if (isDeclaration) {
         const name = fn.childForFieldName("name")!;
         yield* this.Ident(name);
       }
+    }
+    else if (isAsync) {
+      yield "async ";
     }
 
     yield "(";
@@ -191,6 +200,9 @@ const _T = defineTranspilerComponent({
       case "block":
         yield* this.Block(node);
         break;
+      case "const_block":
+        yield* this.Block(node.childForFieldName("body") || node.namedChildren[0]);
+        break;
       case "if_expression":
         yield* this.If(node);
         break;
@@ -322,6 +334,9 @@ const _T = defineTranspilerComponent({
       case "await_expression":
         yield* this.Await(expr);
         break;
+      case "async_block":
+        yield* this.AsyncBlock(expr);
+        break;
       case "try_expression":
         yield* this.Try(expr);
         break;
@@ -336,6 +351,7 @@ const _T = defineTranspilerComponent({
 
       case "match_expression":
       case "block":
+      case "const_block":
       case "if_expression":
       case "loop_expression":
       case "while_expression":
@@ -639,6 +655,12 @@ const _T = defineTranspilerComponent({
   * Await(awaitExpr: SyntaxNode): Code {
     yield "await ";
     yield* this.Expr(awaitExpr.namedChildren[0]);
+  },
+
+  * AsyncBlock(asyncBlock: SyntaxNode): Code {
+    yield "(async () => ";
+    yield* this.Block(asyncBlock.namedChildren[0], true);
+    yield ")()";
   },
 
   * Try(tryExpr: SyntaxNode): Code {

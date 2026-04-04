@@ -1,0 +1,5 @@
+pub fn async_block() {
+  let p = async {
+    1
+  };
+}

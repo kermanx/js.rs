@@ -95,9 +95,10 @@ Status summary for Rust language features in the current transpiler implementati
 
 ## Async and advanced language features
 
-- [ ] `async fn` is supported.
-- [ ] `async` blocks are supported.
-- [ ] `const fn` is supported.
+- [x] `async fn` is supported.
+- [x] `async` blocks are supported.
+- [x] `const fn` is supported.
+- [x] `const` blocks are supported.
 - [ ] Generators are supported.
 - [ ] Inline assembly is supported.
 - [ ] Procedural macros are supported.
