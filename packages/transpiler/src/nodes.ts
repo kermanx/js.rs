@@ -268,6 +268,9 @@ const _T = defineTranspilerComponent({
       case "unary_expression":
         yield* this.Unary(expr);
         break;
+      case "compound_assignment_expr":
+        yield* this.CompoundAssignment(expr);
+        break;
       case "return_expression":
         yield* this.Return(expr);
         break;
@@ -304,6 +307,15 @@ const _T = defineTranspilerComponent({
         break;
       case "closure_expression":
         yield* this.ItemFn(expr, false, true);
+        break;
+      case "generic_function":
+        yield* this.GenericFunction(expr);
+        break;
+      case "type_cast_expression":
+        yield* this.TypeCast(expr);
+        break;
+      case "await_expression":
+        yield* this.Await(expr);
         break;
       case "parenthesized_expression":
         yield "(";
@@ -487,6 +499,10 @@ const _T = defineTranspilerComponent({
         yield ")";
       }
     }
+    else if (op === "-" || op === "!" || op === "+") {
+      yield op;
+      yield* this.Expr(unary.children[1]);
+    }
     else {
       throw new Error(`Not implemented: ${op}`);
     }
@@ -500,6 +516,22 @@ const _T = defineTranspilerComponent({
     yield* this.Expr(left);
     this.insideLValue.pop();
     yield " = ";
+    yield* this.Expr(right);
+    yield ")";
+  },
+
+  * CompoundAssignment(assignment: SyntaxNode): Code {
+    const left = assignment.childForFieldName("left")!;
+    const right = assignment.childForFieldName("right")!;
+    const op = assignment.childForFieldName("operator") || assignment.children[1];
+
+    yield "(";
+    this.insideLValue.push(true);
+    yield* this.Expr(left);
+    this.insideLValue.pop();
+    yield " ";
+    yield op;
+    yield " ";
     yield* this.Expr(right);
     yield ")";
   },
@@ -542,6 +574,19 @@ const _T = defineTranspilerComponent({
       first = false;
       yield* this.Ident(child);
     }
+  },
+
+  * GenericFunction(fn: SyntaxNode): Code {
+    yield* this.Expr(fn.childForFieldName("function")!);
+  },
+
+  * TypeCast(cast: SyntaxNode): Code {
+    yield* this.Expr(cast.childForFieldName("value")!);
+  },
+
+  * Await(awaitExpr: SyntaxNode): Code {
+    yield "await ";
+    yield* this.Expr(awaitExpr.namedChildren[0]);
   },
 
   * Match(match: SyntaxNode): Code {

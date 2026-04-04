@@ -1,0 +1,4 @@
+pub fn type_cast_expression() -> i32 {
+  let x = 1 as i32;
+  x
+}

@@ -68,12 +68,12 @@ Status summary for Rust language features in the current transpiler implementati
 - [x] Mutable reference creation (`&mut`) is transpiled.
 - [x] Immutable reference expressions (`&`) are transpiled as passthrough value references.
 - [x] Dereference unary operator (`*expr`) is transpiled.
-- [ ] Unary negation (`-expr`) is supported.
-- [ ] Unary logical not (`!expr`) is supported.
-- [ ] Compound assignment operators (`+=`, `-=`, etc.) are supported.
-- [ ] `as` cast expressions are supported.
-- [ ] Method turbofish syntax (`foo::<T>()`) is supported.
-- [ ] Await expressions (`.await`) are supported.
+- [x] Unary negation (`-expr`) is supported.
+- [x] Unary logical not (`!expr`) is supported.
+- [x] Compound assignment operators (`+=`, `-=`, etc.) are supported.
+- [x] `as` cast expressions are supported.
+- [x] Method turbofish syntax (`foo::<T>()`) is supported.
+- [x] Await expressions (`.await`) are supported.
 - [ ] Try operator (`?`) is supported.
 
 ## Patterns and matching

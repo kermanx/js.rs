@@ -1,0 +1,6 @@
+pub fn compound_assignment() -> i32 {
+  let mut x = 1;
+  x += 2;
+  x *= 3;
+  x
+}

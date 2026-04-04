@@ -1,0 +1,4 @@
+pub fn unary_logical_not() -> bool {
+  let x = false;
+  !x
+}
