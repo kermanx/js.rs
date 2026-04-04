@@ -1,0 +1,10 @@
+pub fn is_alpha(c: char) -> bool {
+  match c {
+    'x' => {
+      console.log("x");
+      true
+    },
+    'a'..='z' | 'A'..='Z' => true,
+    _ => false,
+  }
+}

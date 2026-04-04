@@ -1,0 +1,3 @@
+pub fn structs(x: A) {
+  let A { a, b: c, .. } = x;
+}

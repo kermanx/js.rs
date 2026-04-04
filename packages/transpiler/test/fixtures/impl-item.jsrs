@@ -1,0 +1,14 @@
+pub struct A {
+  a: i32,
+  b: i32,
+}
+
+impl A {
+  pub fn new(a: i32, b: i32) -> A {
+    A { a, b }
+  }
+
+  pub fn add(&self) -> i32 {
+    self.a + self.b
+  }
+}

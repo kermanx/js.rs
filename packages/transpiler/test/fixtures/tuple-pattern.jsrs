@@ -1,0 +1,11 @@
+pub fn tuple() {
+  let t = (1, 2, 3);
+  let (a, b, c) = t;
+
+  let x = t.0 + t.1;
+
+  match t {
+    (1, a, _) => log(a),
+    _ => log("other"),
+  };
+}

@@ -1,0 +1,14 @@
+pub enum Option<T> {
+  Some(T),
+  None,
+}
+
+pub fn match_test(a: Option<Option<i32>>) -> Option<i32> {
+  let A(B(x), C(y)) = a else { return Option::None; };
+
+  if let D(z) = a {
+    return Option::Some(z);
+  }
+
+  return Option::Some(x + y);
+}

@@ -1,0 +1,6 @@
+pub fn array_pattern(arr: [i32; 5]) {
+  match arr {
+    [1, a, .., b, _] => log(a, b),
+    _ => log("other"),
+  };
+}
