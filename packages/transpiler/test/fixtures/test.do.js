@@ -10,9 +10,9 @@ Analyzer.prototype.exec_if_statement = function (node) {
   var test = this.exec_expression(node.test).get_to_boolean(this);
   var [maybe_consequent, maybe_alternate] = _r.destruct(do {
     _m0 = test.test_truthy();
-    if ((_m1 = _r.matches(_m0, /*Some*/ 0)) && _m1[1] === true) {
+    if ((_m1 = _r.matches(_m0, Some)) && _m1[1] === true) {
       [true, false];
-    } else if ((_m1 = _r.matches(_m0, /*Some*/ 1)) && _m1[1] === false) {
+    } else if ((_m1 = _r.matches(_m0, Some)) && _m1[1] === false) {
       [false, true];
     } else if ((None = _m0)) {
       var None;
@@ -39,8 +39,8 @@ Analyzer.prototype.exec_if_statement = function (node) {
       var conditional_scope = this.pop_cf_scope_and_get_mut();
       _m0 = conditional_scope.kind;
       if (
-        (_m1 = _r.matches(_m0, /*CfScopeKind::ExitBlocker*/ 1)) &&
-        (_m2 = _r.matches(_m1[1], /*Some*/ 1)) &&
+        (_m1 = _r.matches(_m0, CfScopeKind.ExitBlocker)) &&
+        (_m2 = _r.matches(_m1[1], Some)) &&
         (stopped_exit = _m2[1])
       ) {
         var stopped_exit;
@@ -66,15 +66,15 @@ Analyzer.prototype.exec_if_statement = function (node) {
         true,
       );
       _m0 = node.alternate;
-      if ((_m1 = _r.matches(_m0, /*Some*/ 1)) && (alternate = _m1[1])) {
+      if ((_m1 = _r.matches(_m0, Some)) && (alternate = _m1[1])) {
         var alternate;
         {
           this.exec_statement(alternate);
           var conditional_scope = this.pop_cf_scope_and_get_mut();
           _m0 = conditional_scope.kind;
           if (
-            (_m1 = _r.matches(_m0, /*CfScopeKind::ExitBlocker*/ 1)) &&
-            (_m2 = _r.matches(_m1[1], /*Some*/ 1)) &&
+            (_m1 = _r.matches(_m0, CfScopeKind.ExitBlocker)) &&
+            (_m2 = _r.matches(_m1[1], Some)) &&
             (stopped_exit = _m2[1])
           ) {
             var stopped_exit;
@@ -103,7 +103,7 @@ Analyzer.prototype.exec_if_statement = function (node) {
           true,
           acc_dep,
         );
-        if ((_m1 = _r.matches(_m0, /*Some*/ 1)) && (acc_dep = _m1[1])) {
+        if ((_m1 = _r.matches(_m0, Some)) && (acc_dep = _m1[1])) {
           var acc_dep;
           {
             this.exit_to_impl(
@@ -156,7 +156,7 @@ Transformer.prototype.transform_if_statement = function (node) {
         if (
           _m0.length === 2 &&
           (_m1 = _m0) &&
-          (_m2 = _r.matches(_m1[0], /*Some*/ 1)) &&
+          (_m2 = _r.matches(_m1[0], Some)) &&
           (consequent = _m2[1]) &&
           (alternate = _m1[1])
         ) {
@@ -175,7 +175,7 @@ Transformer.prototype.transform_if_statement = function (node) {
           _m0.length === 2 &&
           (_m1 = _m0) &&
           (None = _m1[0]) &&
-          (_m2 = _r.matches(_m1[1], /*Some*/ 1)) &&
+          (_m2 = _r.matches(_m1[1], Some)) &&
           (alternate = _m2[1])
         ) {
           var None, alternate;
@@ -202,7 +202,7 @@ Transformer.prototype.transform_if_statement = function (node) {
     } else {
       var statements = this.ast_builder.vec();
       _m0 = test;
-      if ((_m1 = _r.matches(_m0, /*Some*/ 1)) && (test = _m1[1])) {
+      if ((_m1 = _r.matches(_m0, Some)) && (test = _m1[1])) {
         var test;
         {
           statements.push(
@@ -211,14 +211,14 @@ Transformer.prototype.transform_if_statement = function (node) {
         }
       }
       _m0 = consequent;
-      if ((_m1 = _r.matches(_m0, /*Some*/ 1)) && (consequent = _m1[1])) {
+      if ((_m1 = _r.matches(_m0, Some)) && (consequent = _m1[1])) {
         var consequent;
         {
           statements.push(consequent);
         }
       }
       _m0 = alternate;
-      if ((_m1 = _r.matches(_m0, /*Some*/ 1)) && (alternate = _m1[1])) {
+      if ((_m1 = _r.matches(_m0, Some)) && (alternate = _m1[1])) {
         var alternate;
         {
           statements.push(alternate);

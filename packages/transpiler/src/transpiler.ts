@@ -9,7 +9,6 @@ export class Transpiler {
   }
 
   options: Options;
-  discriminants = new Map<string, number>();
   blockPostCbs: Array<Array<(this: this) => Code>> = [[]];
   matchIdentifiers: string[] = [];
   reexportsNamed: string[] = [];
@@ -30,15 +29,6 @@ export class Transpiler {
   set matchDepth(value: number) {
     this._matchDepth = value;
     this.maxMatchDepth = Math.max(this.maxMatchDepth, value);
-  }
-
-  getDiscriminantId(name: string): string {
-    let id = this.discriminants.get(name);
-    if (!id) {
-      id = this.discriminants.size;
-      this.discriminants.set(name, id);
-    }
-    return `/*${name}*/ ${id}`;
   }
 
   blockPost(callback: (this: this) => Code) {

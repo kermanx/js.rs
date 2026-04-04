@@ -1,11 +1,13 @@
 const DISCRIMINANT_KEY = Symbol("Discriminant");
 
 export function variant(discriminant) {
-  return (...data) => ({
+  const factory = (...data) => ({
     __proto__: this.prototype,
     [DISCRIMINANT_KEY]: discriminant,
     data,
   });
+  factory[DISCRIMINANT_KEY] = discriminant;
+  return factory;
 }
 
 export function unitVariant(discriminant) {
@@ -17,7 +19,7 @@ export function unitVariant(discriminant) {
 }
 
 export function matches(value, discriminant) {
-  return value?.[DISCRIMINANT_KEY] === discriminant ? value.data : null;
+  return value?.[DISCRIMINANT_KEY] === discriminant[DISCRIMINANT_KEY] ? value.data : null;
 }
 
 export function impl(target, members) {

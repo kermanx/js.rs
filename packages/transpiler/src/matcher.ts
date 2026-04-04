@@ -57,8 +57,15 @@ const _T = defineTranspilerComponent({
   },
 
   * PatTupleStructMatcher(pat: SyntaxNode, target: string): Code {
-    const discriminant = this.getDiscriminantId(pat.namedChildren[0].text);
-    yield `((_m${this.matchDepth} = _r.matches(${target}, ${discriminant}))`;
+    const variant = pat.namedChildren[0];
+    yield `((_m${this.matchDepth} = _r.matches(${target}, `;
+    if (variant.type === "scoped_identifier") {
+      yield* this.ScopedIdent(variant);
+    }
+    else {
+      yield variant;
+    }
+    yield "))";
 
     for (let i = 1; i < pat.namedChildren.length; i++) {
       yield `&&`;

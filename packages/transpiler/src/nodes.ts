@@ -468,6 +468,7 @@ const _T = defineTranspilerComponent({
     yield "() {}\n";
 
     const body = enm.childForFieldName("body")!;
+    let discriminant = 0;
     for (const variant of body.namedChildren) {
       yield* this.Ident(name);
       yield ".";
@@ -479,7 +480,7 @@ const _T = defineTranspilerComponent({
 
       const body = variant.childForFieldName("body");
       yield body ? ["_r.variant(", variant.startPosition] : ["_r.unitVariant(", variant.startPosition];
-      yield [this.getDiscriminantId(variantName.text), variantName.startPosition];
+      yield [`${discriminant++}`, variantName.startPosition];
       yield ")";
 
       yield ";\n";
