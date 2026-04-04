@@ -44,7 +44,7 @@ export function generateMap(segments: Iterable<Segment>) {
 
     if (newGenLines > 0) {
       mappings += ";".repeat(newGenLines);
-      genColumn = lines[lines.length - 1].length;
+      genColumn = lines.at(-1)!.length;
       lastGenColumn = null;
     }
     else {

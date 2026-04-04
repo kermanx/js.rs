@@ -1,11 +1,9 @@
 import type { Segment } from "./sourcemap";
 import type { Options } from "./types";
-import { MatcherPrinter } from "./matcher";
-import { Printer } from "./nodes";
 
 export type Code = Generator<Segment, void, void>;
 
-export class Context {
+export class Transpiler {
   constructor(options: Options = {}) {
     this.options = options;
   }
@@ -21,7 +19,7 @@ export class Context {
   insideLValue: boolean[] = [false];
 
   get isInsideLValue() {
-    return this.insideLValue[this.insideLValue.length - 1];
+    return this.insideLValue.at(-1);
   }
 
   get matchDepth() {
@@ -43,23 +41,11 @@ export class Context {
   }
 
   blockPost(callback: (this: this) => Code) {
-    this.blockPostCbs[this.blockPostCbs.length - 1].push(callback);
-  }
-
-  as_printer(): Printer {
-    return this as any as Printer;
-  }
-
-  as_matcher_printer(): MatcherPrinter {
-    return this as any as MatcherPrinter;
+    this.blockPostCbs.at(-1)!.push(callback);
   }
 }
 
-Object.defineProperties(
-  Context.prototype,
-  Object.getOwnPropertyDescriptors(Printer.prototype),
-);
-Object.defineProperties(
-  Context.prototype,
-  Object.getOwnPropertyDescriptors(MatcherPrinter.prototype),
-);
+export function defineTranspilerComponent<T extends Record<string, (this: Transpiler, ...args: any[]) => any>>(part: T): T {
+  Object.assign(Transpiler.prototype, part);
+  return part;
+}
