@@ -115,3 +115,5 @@ export function index(target, index) {
     return target[index];
   }
 }
+
+export const TRY_FAIL = Symbol("TRY_FAIL");

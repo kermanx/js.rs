@@ -317,6 +317,9 @@ const _T = defineTranspilerComponent({
       case "await_expression":
         yield* this.Await(expr);
         break;
+      case "try_expression":
+        yield* this.Try(expr);
+        break;
       case "parenthesized_expression":
         yield "(";
         yield* this.Expr(expr.namedChildren[0]);
@@ -587,6 +590,18 @@ const _T = defineTranspilerComponent({
   * Await(awaitExpr: SyntaxNode): Code {
     yield "await ";
     yield* this.Expr(awaitExpr.namedChildren[0]);
+  },
+
+  * Try(tryExpr: SyntaxNode): Code {
+    const value = tryExpr.namedChildren[0];
+    const temp = this.newTempVar(value);
+    yield "(do {";
+    yield `const ${temp} = `;
+    yield* this.Expr(value);
+    yield ";";
+    yield `if (${temp}[_r.TRY_FAIL]) return;`;
+    yield `${temp};`;
+    yield "})";
   },
 
   * Match(match: SyntaxNode): Code {

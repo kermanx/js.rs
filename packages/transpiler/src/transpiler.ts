@@ -14,6 +14,7 @@ export class Transpiler {
   matchIdentifiers: string[] = [];
   reexportsNamed: string[] = [];
   reexportsAll: string[] = [];
+  tempVarId = 0;
   _matchDepth = 0;
   maxMatchDepth = 0;
   insideLValue: boolean[] = [false];
@@ -42,6 +43,10 @@ export class Transpiler {
 
   blockPost(callback: (this: this) => Code) {
     this.blockPostCbs.at(-1)!.push(callback);
+  }
+
+  newTempVar(_forExpr?: unknown) {
+    return `_t${this.tempVarId++}`;
   }
 }
 
