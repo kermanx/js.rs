@@ -221,7 +221,7 @@ export class Printer {
       if (value) {
         yield " = ";
         if (pattern.type !== "identifier") {
-          yield "_r.destructure(";
+          yield "_r.destruct(";
         }
         yield* this.printExpr(value);
         if (pattern.type !== "identifier") {

@@ -1,8 +1,8 @@
 import * as _r from "@jsrs/runtime";
-import * as y from "@/x/x/y";
-import { y1, y2 } from "@/x/x/y";
-import * as t from "@/x/z";
-import { t as h } from "@/x";
+import * as y from "./x/x/y";
+import { y1, y2 } from "./x/x/y";
+import * as t from "./x/z";
+import { t as h } from "./x";
 export { y, y1, y2, t, h };
 import { x } from "t";
 export { x };
@@ -108,7 +108,7 @@ export function array() {
 }
 export function tuple() {
   var t = [1, 2, 3];
-  var [a, b, c] = _r.destructure(t);
+  var [a, b, c] = _r.destruct(t);
   var x = t[0] + t[1];
   _m0 = t;
   if (_m0.length === 3 && (_m1 = _m0) && _m1[0] === 1 && (a = _m1[1]) && true) {
@@ -119,7 +119,7 @@ export function tuple() {
   }
 }
 export function structs(x) {
-  var { a, b: c } = _r.destructure(x);
+  var { a, b: c } = _r.destruct(x);
 }
 export function closures(x) {
   var s = (a, b) => {

@@ -1,2 +1,7 @@
 packages:
   - packages/*
+allowBuilds:
+  core-js: true
+  esbuild: true
+  tree-sitter: true
+  tree-sitter-rust: true

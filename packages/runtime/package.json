@@ -1,3 +1,5 @@
 {
-  "name": "@jsrs/runtime"
+  "name": "@jsrs/runtime",
+  "type": "module",
+  "main": "./src/index.js"
 }

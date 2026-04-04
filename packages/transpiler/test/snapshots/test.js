@@ -1,8 +1,8 @@
 import * as _r from "@jsrs/runtime";
-import { Analyzer } from "@/analyzer";
-import { AstKind2 } from "@/ast";
-import { CfScopeKind } from "@/scope";
-import { Transformer } from "@/transformer";
+import { Analyzer } from "./analyzer";
+import { AstKind2 } from "./ast";
+import { CfScopeKind } from "./scope";
+import { Transformer } from "./transformer";
 import { IfStatement, Statement } from "oxc/ast/ast";
 import { GetSpan } from "oxc/span";
 Analyzer.prototype.exec_if_statement = function (node) {
@@ -21,7 +21,7 @@ Analyzer.prototype.exec_if_statement = function (node) {
       _do = [true, true];
     }
   }
-  _do2 = _r.destructure(_do);
+  _do2 = _r.destruct(_do);
   var [maybe_consequent, maybe_alternate] = _do2;
   var both_exit = true;
   var exit_target_inner = 0;
@@ -132,8 +132,8 @@ Analyzer.prototype.exec_if_statement = function (node) {
   return _do3;
 };
 Transformer.prototype.transform_if_statement = function (node) {
-  var { span, test, consequent, alternate } = _r.destructure(node);
-  var [need_test_val, maybe_consequent, maybe_alternate] = _r.destructure(
+  var { span, test, consequent, alternate } = _r.destruct(node);
+  var [need_test_val, maybe_consequent, maybe_alternate] = _r.destruct(
     this.get_conditional_result(AstKind2.IfStatement(node)),
   );
   var test = this.transform_expression(test, need_test_val);
