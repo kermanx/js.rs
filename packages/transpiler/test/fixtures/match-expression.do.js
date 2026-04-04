@@ -14,3 +14,13 @@ export function is_alpha(c) {
     }
   };
 }
+export function is_null(s) {
+  return do {
+    const _t1 = s;
+    if (_t1 === null) {
+      true;
+    } else {
+      false;
+    }
+  };
+}

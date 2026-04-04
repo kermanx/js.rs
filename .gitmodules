@@ -1,0 +1,3 @@
+[submodule "packages/parser/tree-sitter-jsrs"]
+	path = packages/parser/tree-sitter-jsrs
+	url = https://github.com/kermanx/tree-sitter-jsrs.git

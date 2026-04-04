@@ -8,3 +8,10 @@ pub fn is_alpha(c: char) -> bool {
     _ => false,
   }
 }
+
+pub fn is_null(s: string | null) -> bool {
+  match s {
+    null => true,
+    _ => false,
+  }
+}

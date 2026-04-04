@@ -16,3 +16,15 @@ export function is_alpha(c) {
   }
   return _do;
 }
+export function is_null(s) {
+  {
+    var _do2;
+    const _t1 = s;
+    if (_t1 === null) {
+      _do2 = true;
+    } else {
+      _do2 = false;
+    }
+  }
+  return _do2;
+}

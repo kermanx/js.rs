@@ -15,4 +15,4 @@ export function transpile(source: string, options?: Options): {
   return generateMap(context.File(parsed.rootNode));
 }
 
-export { Options } from "./types";
+export { Options };

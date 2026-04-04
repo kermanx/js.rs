@@ -37,6 +37,8 @@ const _T = defineTranspilerComponent({
       case "boolean_literal":
       case "integer_literal":
       case "char_literal":
+      case "null_literal":
+      case "undefined_literal":
         yield `(${target} === ${pat.text})`;
         break;
       case "or_pattern":

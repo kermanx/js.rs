@@ -44,19 +44,25 @@ const _T = defineTranspilerComponent({
 
     const parameters = fn.childForFieldName("parameters")!;
     for (const param of parameters.namedChildren) {
+      let emitted = false;
       if (param.type === "self_parameter") {
         continue;
       }
       else if (param.type === "parameter") {
         yield* this.Pat(param.childForFieldName("pattern")!);
+        emitted = true;
       }
-      else if (
-        param.type === "identifier"
-        || param.type === "type_identifier"
-      ) {
+      else if (param.type === "identifier") {
         yield* this.Ident(param);
+        emitted = true;
       }
-      yield ",";
+      else if (param.type === "type_identifier") {
+        yield* this.Ident(param);
+        emitted = true;
+      }
+      if (emitted) {
+        yield ",";
+      }
     }
 
     yield ") ";
@@ -280,6 +286,8 @@ const _T = defineTranspilerComponent({
       case "integer_literal":
       case "boolean_literal":
       case "string_literal":
+      case "null_literal":
+      case "undefined_literal":
         yield expr;
         break;
       case "binary_expression":
@@ -661,16 +669,25 @@ const _T = defineTranspilerComponent({
     yield " = function (";
 
     for (const param of parameters.namedChildren) {
+      let emitted = false;
       if (param.type === "self_parameter") {
         continue;
       }
       else if (param.type === "parameter") {
         yield* this.Pat(param.childForFieldName("pattern")!);
+        emitted = true;
       }
-      else if (param.type === "identifier" || param.type === "type_identifier") {
+      else if (param.type === "identifier") {
         yield* this.Ident(param);
+        emitted = true;
       }
-      yield ",";
+      else if (param.type === "type_identifier") {
+        yield* this.Ident(param);
+        emitted = true;
+      }
+      if (emitted) {
+        yield ",";
+      }
     }
 
     yield ") ";

@@ -14,21 +14,11 @@ export class Transpiler {
   reexportsNamed: string[] = [];
   reexportsAll: string[] = [];
   tempVarId = 0;
-  _matchDepth = 0;
   maxMatchDepth = 0;
   insideLValue: boolean[] = [false];
 
   get isInsideLValue() {
     return this.insideLValue.at(-1);
-  }
-
-  get matchDepth() {
-    return this._matchDepth;
-  }
-
-  set matchDepth(value: number) {
-    this._matchDepth = value;
-    this.maxMatchDepth = Math.max(this.maxMatchDepth, value);
   }
 
   blockPost(callback: (this: this) => Code) {
