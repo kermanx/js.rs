@@ -8,7 +8,7 @@
     }
   },
   "dependencies": {
-    "tree-sitter": "^0.25.0",
+    "tree-sitter": "^0.22.4",
     "tree-sitter-jsrs": "workspace:*"
   }
 }

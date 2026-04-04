@@ -6,8 +6,8 @@
     "@volar/language-server": "^2.4.28",
     "@volar/language-service": "^2.4.28",
     "@volar/typescript": "^2.4.28",
-    "tree-sitter": "^0.25.0",
-    "tree-sitter-rust": "^0.24.0",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-jsrs": "workspace:*",
     "volar-service-typescript": "^0.0.70",
     "vscode-languageserver-textdocument": "^1.0.12",
     "vscode-uri": "^3.1.0"

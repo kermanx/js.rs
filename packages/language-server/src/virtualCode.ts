@@ -3,19 +3,19 @@ import type { Language, Tree } from "tree-sitter";
 import type ts from "typescript";
 import type { Position } from "vscode-languageserver-textdocument";
 import Parser from "tree-sitter";
-import _Rust from "tree-sitter-rust";
+import _JsRs from "tree-sitter-jsrs";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { generateRoot } from "./codegen";
 import { refreshCodegenContext } from "./codegen/context";
 import { resolveCodes } from "./utils/resolveCodes";
 
 let parser: Parser | undefined;
-function getRustParser() {
+function getJsRsParser() {
   if (!parser) {
     // eslint-disable-next-line ts/no-require-imports
-    const Rust: Language = typeof _Rust === "string" ? require(_Rust) : _Rust;
+    const JsRs: Language = typeof _JsRs === "string" ? require(_JsRs) : _JsRs;
     parser = new Parser();
-    parser.setLanguage(Rust);
+    parser.setLanguage(JsRs);
   }
   return parser;
 }
@@ -48,7 +48,7 @@ export class JsrsVirtualCode implements VirtualCode {
     ];
 
     const content = snapshot.getText(0, snapshot.getLength());
-    this.tree = getRustParser().parse(content);
+    this.tree = getJsRsParser().parse(content);
     this.document = TextDocument.create("file://temp.jsrs", "jsrs", 0, content);
     this.updateEmbeddedCodes();
   }
@@ -67,12 +67,12 @@ export class JsrsVirtualCode implements VirtualCode {
         oldEndPosition: positionToPoint(this.document.positionAt(changeRange.span.start + changeRange.span.length)),
         newEndPosition: positionToPoint(newDocument.positionAt(changeRange.span.start + changeRange.newLength)),
       });
-      this.tree = getRustParser().parse(newContent, this.tree);
+      this.tree = getJsRsParser().parse(newContent, this.tree);
       this.document = newDocument;
     }
     else {
       // Cannot be incrementally updated, just recreate the tree
-      this.tree = getRustParser().parse(newContent);
+      this.tree = getJsRsParser().parse(newContent);
       this.document = TextDocument.create("file://temp.jsrs", "jsrs", 0, newContent);
     }
     this.updateEmbeddedCodes();

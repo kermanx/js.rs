@@ -6,4 +6,3 @@ allowBuilds:
   esbuild: true
   tree-sitter: true
   tree-sitter-cli: true
-  tree-sitter-rust: true
