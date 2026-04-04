@@ -22,8 +22,9 @@ export function matches(value, discriminant) {
   return value?.[DISCRIMINANT_KEY] === discriminant[DISCRIMINANT_KEY] ? value.data : null;
 }
 
-export function impl(target, members) {
-  Object.assign(target.prototype, members);
+export function implTrait(struct, trait) {
+  Object.assign(struct, trait);
+  Object.assign(struct.prototype, trait.prototype);
 }
 
 export const REF_TARGET = Symbol("Ref Target");
@@ -119,3 +120,9 @@ export function index(target, index) {
 }
 
 export const TRY_FAIL = Symbol("TRY_FAIL");
+
+export function unimplemented(message) {
+  return function unimplementedMethod() {
+    throw new Error(`Unimplemented: ${message}`);
+  };
+}

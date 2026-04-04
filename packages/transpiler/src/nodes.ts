@@ -183,6 +183,9 @@ const _T = defineTranspilerComponent({
       case "type_item":
         yield* this.ItemType(node);
         break;
+      case "trait_item":
+        yield* this.ItemTrait(node);
+        break;
       case "line_comment":
         break;
       case "use_declaration":
@@ -412,6 +415,7 @@ const _T = defineTranspilerComponent({
   * TypeIdent(ident: SyntaxNode): Code {
     switch (ident.type) {
       case "type_identifier":
+      case "scoped_type_identifier":
         yield* this.Ident(ident);
         break;
       case "generic_type":
@@ -424,28 +428,70 @@ const _T = defineTranspilerComponent({
 
   * ItemImpl(impl: SyntaxNode): Code {
     const type = impl.childForFieldName("type")!;
+    const trait = impl.childForFieldName("trait");
     const body = impl.childForFieldName("body")!;
-    for (const decl of body.namedChildren) {
+
+    if (trait) {
+      yield "_r.implTrait(";
       yield* this.TypeIdent(type);
-
-      const isStatic
-        = decl.childForFieldName("parameters")!.namedChildren[0]?.type
-          !== "self_parameter";
-      if (!isStatic) {
-        yield ".prototype";
-      }
-
-      yield ".";
-
-      const name = decl.childForFieldName("name")!;
-      yield* this.Ident(name);
-
-      yield " = ";
-
-      yield* this.ItemFn(decl, false);
-
-      yield "\n";
+      yield ", ";
+      yield* this.TypeIdent(trait);
+      yield ");\n";
     }
+
+    for (const decl of body.namedChildren) {
+      if (decl.type === "function_item") {
+        yield* this.TypeIdent(type);
+
+        const isStatic
+          = decl.childForFieldName("parameters")!.namedChildren[0]?.type
+            !== "self_parameter";
+        if (!isStatic) {
+          yield ".prototype";
+        }
+
+        yield ".";
+
+        const name = decl.childForFieldName("name")!;
+        yield* this.Ident(name);
+
+        yield " = ";
+
+        yield* this.ItemFn(decl, false);
+
+        yield "\n";
+      }
+      else if (decl.type === "const_item") {
+        yield* this.ImplAssocConst(type, decl);
+      }
+      else if (decl.type === "type_item") {
+        yield* this.ImplAssocType(type, decl);
+      }
+    }
+  },
+
+  * ImplAssocConst(ownerType: SyntaxNode, decl: SyntaxNode): Code {
+    yield* this.TypeIdent(ownerType);
+    yield ".";
+    yield* this.Ident(decl.childForFieldName("name")!);
+    yield " = ";
+    const value = decl.childForFieldName("value");
+    if (value) {
+      yield* this.Expr(value);
+    }
+    else {
+      yield "undefined";
+    }
+    yield "\n";
+  },
+
+  * ImplAssocType(ownerType: SyntaxNode, decl: SyntaxNode): Code {
+    yield* this.TypeIdent(ownerType);
+    yield ".";
+    yield decl.childForFieldName("name")!;
+    yield " = ";
+    yield* this.Type(decl.childForFieldName("type")!);
+    yield "\n";
   },
 
   * Struct(struct: SyntaxNode): Code {
@@ -549,6 +595,101 @@ const _T = defineTranspilerComponent({
     yield item.childForFieldName("name")!;
     yield " = ";
     yield* this.Type(item.childForFieldName("type")!);
+  },
+
+  * ItemTrait(item: SyntaxNode): Code {
+    if (item.namedChildren[0]?.type === "visibility_modifier") {
+      yield "export ";
+    }
+
+    const traitName = item.childForFieldName("name")!;
+    yield "function ";
+    yield traitName;
+    yield "() {}\n";
+
+    const body = item.childForFieldName("body")!;
+    for (const decl of body.namedChildren) {
+      if (decl.type === "function_item") {
+        yield* this.TraitMethodFromFunction(traitName.text, decl);
+      }
+      else if (decl.type === "function_signature_item") {
+        yield* this.TraitMethodFromSignature(traitName.text, decl);
+      }
+      else if (decl.type === "const_item") {
+        yield* this.TraitAssocConst(traitName.text, decl);
+      }
+      else if (decl.type === "type_item") {
+        yield* this.TraitAssocType(traitName.text, decl);
+      }
+    }
+  },
+
+  * TraitAssocConst(traitName: string, decl: SyntaxNode): Code {
+    yield traitName;
+    yield ".";
+    yield* this.Ident(decl.childForFieldName("name")!);
+    yield " = ";
+    const value = decl.childForFieldName("value");
+    if (value) {
+      yield* this.Expr(value);
+    }
+    else {
+      yield "undefined";
+    }
+    yield "\n";
+  },
+
+  * TraitAssocType(traitName: string, decl: SyntaxNode): Code {
+    yield traitName;
+    yield ".";
+    yield decl.childForFieldName("name")!;
+    yield " = ";
+    yield* this.Type(decl.childForFieldName("type")!);
+    yield "\n";
+  },
+
+  * TraitMethodFromFunction(traitName: string, decl: SyntaxNode): Code {
+    const parameters = decl.childForFieldName("parameters")!;
+    const isStatic = parameters.namedChildren[0]?.type !== "self_parameter";
+
+    yield traitName;
+    if (!isStatic) {
+      yield ".prototype";
+    }
+    yield ".";
+    yield* this.Ident(decl.childForFieldName("name")!);
+    yield " = function (";
+
+    for (const param of parameters.namedChildren) {
+      if (param.type === "self_parameter") {
+        continue;
+      }
+      else if (param.type === "parameter") {
+        yield* this.Pat(param.childForFieldName("pattern")!);
+      }
+      else if (param.type === "identifier" || param.type === "type_identifier") {
+        yield* this.Ident(param);
+      }
+      yield ",";
+    }
+
+    yield ") ";
+    yield* this.Block(decl.childForFieldName("body")!, true);
+    yield "\n";
+  },
+
+  * TraitMethodFromSignature(traitName: string, decl: SyntaxNode): Code {
+    const parameters = decl.childForFieldName("parameters")!;
+    const isStatic = parameters.namedChildren[0]?.type !== "self_parameter";
+
+    yield traitName;
+    if (!isStatic) {
+      yield ".prototype";
+    }
+    yield ".";
+    const name = decl.childForFieldName("name")!;
+    yield* this.Ident(name);
+    yield ` = _r.unimplemented(${JSON.stringify(`${traitName}::${name.text}`)});\n`;
   },
 
   * Unary(unary: SyntaxNode): Code {

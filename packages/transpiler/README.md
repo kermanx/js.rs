@@ -19,10 +19,10 @@ Status summary for Rust language features in the current transpiler implementati
 - [x] `const` item declarations are supported.
 - [x] `static` item declarations are supported.
 - [x] `type` alias item declarations are supported.
-- [ ] `trait` item declarations are supported.
-- [ ] `impl Trait for Type` trait implementation blocks are supported.
-- [ ] Associated constants in `impl` blocks are supported.
-- [ ] Associated type definitions in `impl` blocks are supported.
+- [x] `trait` item declarations are supported.
+- [x] `impl Trait for Type` trait implementation blocks are supported.
+- [x] Associated constants in `impl` blocks are supported.
+- [x] Associated type definitions in `impl` blocks are supported.
 - [ ] Macro item declarations (`macro_rules!`) are supported.
 
 ## Statements and control flow
@@ -105,3 +105,9 @@ Status summary for Rust language features in the current transpiler implementati
 - [ ] Declarative macro expansion is supported.
 - [ ] Attributes (`#[...]`) are supported.
 - [ ] `cfg` conditional compilation is supported.
+
+## Notes
+
+- Context-free transpilation only
+- No auto reference/dereference is performed
+- Trait objects are just partial classes - no namespace isolation
