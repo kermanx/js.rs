@@ -13,7 +13,7 @@ describe("transpiler", () => {
       eager: true,
       query: "?raw",
     });
-    const snapshotsDir = fileURLToPath(new URL("./snapshots", import.meta.url));
+    const snapshotsDir = fileURLToPath(new URL("./fixtures", import.meta.url));
     for (const [path, { default: source }] of Object.entries(fixtures) as any) {
       const name = basename(path, ".jsrs");
       let result = transpile(source).code;
@@ -29,7 +29,7 @@ describe("transpiler", () => {
         throw e;
       }
       await expect(prettified).toMatchFileSnapshot(
-        `${snapshotsDir}/${name}.do.js`,
+        `${snapshotsDir}/${name}.jsrs.do.js`,
       );
 
       try {
@@ -45,7 +45,7 @@ describe("transpiler", () => {
         throw e;
       }
       await expect(prettified).toMatchFileSnapshot(
-        `${snapshotsDir}/${name}.js`,
+        `${snapshotsDir}/${name}.jsrs.js`,
       );
     }
   });
