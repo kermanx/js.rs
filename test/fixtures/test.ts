@@ -23,11 +23,15 @@ exec_if_statement(this:Analyzer<__JSRS_lifetime_a>, node: __JSRS_Ref<IfStatement
     const test = this.exec_expression(__JSRS_ref(node.test)).get_to_boolean(this);
 
 //    let (maybe_consequent, maybe_alternate) = match test.test_truthy() {
+    const [maybe_consequent, maybe_alternate] = (() => { const __jsrs_match = test.test_truthy();
 //      Some(true) => (true, false),
+if (__JSRS_any(__jsrs_match)) return (true, false);
 //      Some(false) => (false, true),
+if (__JSRS_any(__jsrs_match)) return (false, true);
 //      None => (true, true),
+if (__jsrs_match === None) return (true, true);
 //    };
-    const [maybe_consequent, maybe_alternate] = (() => { const __jsrs_match = test.test_truthy(); if (__JSRS_any(__jsrs_match)) return (true, false); if (__JSRS_any(__jsrs_match)) return (false, true); if (__jsrs_match === None) return (true, true); return undefined as any; })();
+return undefined as any; })();
 
 //    let mut both_exit = true;
     let both_exit = true;
@@ -186,13 +190,15 @@ transform_if_statement(this:Transformer<__JSRS_lifetime_a>, node: __JSRS_Ref<IfS
 //    if need_test_val {
     return (() => { if (need_test_val){
 //      match (consequent, alternate) {
+      (() => { const __jsrs_match = (consequent, alternate);
 //        (Some(consequent), alternate) => {
-      (() => { const __jsrs_match = (consequent, alternate); if (__JSRS_any(__jsrs_match)) return (() => {
+if (__JSRS_any(__jsrs_match)) return (() => {
 //          Some(self.ast_builder.statement_if(*span, test.unwrap(), consequent, alternate))
           Some(self.ast_builder.statement_if(*span, test.unwrap(), consequent, alternate))
 //        }
+        })();
 //        (None, Some(alternate)) => Some(self.ast_builder.statement_if(
-        })(); if (__JSRS_any(__jsrs_match)) return Some(self.ast_builder.statement_if(
+if (__JSRS_any(__jsrs_match)) return Some(self.ast_builder.statement_if(
 //          *span,
           *span,
 //          self.build_negate_expression(test.unwrap()),
@@ -202,9 +208,11 @@ transform_if_statement(this:Transformer<__JSRS_lifetime_a>, node: __JSRS_Ref<IfS
 //          None,
           None,
 //        )),
+        ));
 //        (None, None) => test.map(|test| self.ast_builder.statement_expression(test.span(), test)),
+if (__JSRS_any(__jsrs_match)) return test.map(|test| self.ast_builder.statement_expression(test.span(), test));
 //      }
-        )); if (__JSRS_any(__jsrs_match)) return test.map(|test| self.ast_builder.statement_expression(test.span(), test)); return undefined as any; })()
+return undefined as any; })()
 //    } else {
     }else {
 //      let mut statements = self.ast_builder.vec();

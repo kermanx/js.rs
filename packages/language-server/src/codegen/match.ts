@@ -12,7 +12,7 @@ export function* generateMatch(node: SyntaxNode): Generator<Code> {
   else {
     yield "undefined";
   }
-  yield "; ";
+  yield ";\n";
 
   if (body) {
     for (const arm of body.namedChildren) {
@@ -42,7 +42,7 @@ export function* generateMatch(node: SyntaxNode): Generator<Code> {
       else {
         yield "undefined as any";
       }
-      yield "; ";
+      yield ";\n";
     }
   }
 

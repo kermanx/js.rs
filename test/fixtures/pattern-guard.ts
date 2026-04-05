@@ -14,10 +14,13 @@ export var Option!: __JSRS_Option__Ctor
 //pub fn pattern_guard(x: Option<number>) -> number {
 export function pattern_guard(x: Option<number>): number {
 //  match x {
+  return (() => { const __jsrs_match = x;
 //    Option::Some(v) if v > 1 => v,
+if (__JSRS_any(__jsrs_match)) return v;
 //    _ => 0,
+if (true) return 0;
 //  }
-  return (() => { const __jsrs_match = x; if (__JSRS_any(__jsrs_match)) return v; if (true) return 0; return undefined as any; })()
+return undefined as any; })()
 //}
 }
 

@@ -9,10 +9,13 @@ export function tuple() {
   const x = t[0] + t[1];
 
 //  match t {
+  (() => { const __jsrs_match = t;
 //    (1, a, _) => log(a),
+if (__JSRS_any(__jsrs_match)) return log(a);
 //    _ => log("other"),
+if (true) return log("other");
 //  };
-  (() => { const __jsrs_match = t; if (__JSRS_any(__jsrs_match)) return log(a); if (true) return log("other"); return undefined as any; })()(undefined as any);
+return undefined as any; })()(undefined as any);
 //}
 }
 

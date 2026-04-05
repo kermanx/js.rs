@@ -9,8 +9,8 @@ export function array_pattern(arr) {
     true
   ) {
     var a, b;
-    log(a, b);
+    console.log(a, b);
   } else {
-    log("other");
+    console.log("other");
   }
 }

@@ -1,6 +1,6 @@
 pub fn array_pattern(arr: [number; 5]) {
   match arr {
-    [1, a, .., b, _] => log(a, b),
-    _ => log("other"),
+    [1, a, .., b, _] => console.log(a, b),
+    _ => console.log("other"),
   };
 }
