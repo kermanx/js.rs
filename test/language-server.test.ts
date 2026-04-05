@@ -201,7 +201,7 @@ describe("language-server", () => {
       await expect(annotated).not.toMatch(/(^|\n)\/\/\s*\n/g);
 
       await expect(annotated).toMatchFileSnapshot(
-        join(snapshotsDir, `${basename(fixture, ".jsrs")}.ts`),
+        join(snapshotsDir, `${basename(fixture, ".jsrs")}.mts`),
       );
     }
   });

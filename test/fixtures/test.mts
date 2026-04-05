@@ -12,10 +12,10 @@ import { GetSpan } from "oxc/span";
 //};
 ;
 
-//impl<'a> Analyzer<'a> {
-function __JSRS_impl_164<'a>() { return {
+function __JSRS_impl_164() { return {
+//impl Analyzer {
 //  pub fn exec_if_statement(&mut self, node: &'a IfStatement) {
-exec_if_statement(this:Analyzer<__JSRS_lifetime_a>, node: __JSRS_Ref<IfStatement>) {
+exec_if_statement(this:Analyzer, node: __JSRS_Ref<IfStatement>) {
 //    let factory = self.factory;
     const factory = this.factory;
 
@@ -156,15 +156,15 @@ return undefined as any; })();
 //  }
   },
 } }
-type __JSRS_impl_164_T<'a> = ReturnType<typeof __JSRS_impl_164<'a>>;
-interface Analyzer<'a> extends __JSRS_impl_164_T<'a> {}
+type __JSRS_impl_164_T = ReturnType<typeof __JSRS_impl_164>;
+interface Analyzer extends __JSRS_impl_164_T {}
 //}
 
 
-//impl<'a> Transformer<'a> {
-function __JSRS_impl_2696<'a>() { return {
-//  pub fn transform_if_statement(&self, node: &'a IfStatement<'a>) -> Option<Statement<'a>> {
-transform_if_statement(this:Transformer<__JSRS_lifetime_a>, node: __JSRS_Ref<IfStatement<__JSRS_lifetime_a>>): Option<Statement<__JSRS_lifetime_a>> {
+function __JSRS_impl_2688() { return {
+//impl Transformer {
+//  pub fn transform_if_statement(&self, node: &'a IfStatement) -> Option<Statement> {
+transform_if_statement(this:Transformer, node: __JSRS_Ref<IfStatement>): Option<Statement> {
 //    let IfStatement { span, test, consequent, alternate } = node;
     const {span, test, consequent, alternate} = node;
 
@@ -251,7 +251,7 @@ return undefined as any; })()
 //  }
   },
 } }
-type __JSRS_impl_2696_T<'a> = ReturnType<typeof __JSRS_impl_2696<'a>>;
-interface Transformer<'a> extends __JSRS_impl_2696_T<'a> {}
+type __JSRS_impl_2688_T = ReturnType<typeof __JSRS_impl_2688>;
+interface Transformer extends __JSRS_impl_2688_T {}
 //}
 

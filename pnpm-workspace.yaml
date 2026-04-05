@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - packages/parser/tree-sitter-jsrs
+  - test
 allowBuilds:
   core-js: true
   esbuild: true

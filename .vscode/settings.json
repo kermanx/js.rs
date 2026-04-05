@@ -7,7 +7,7 @@
   "prettier.enable": false,
 
   "explorer.fileNesting.patterns": {
-    "*.jsrs": "$(capture).ts, $(capture).js, $(capture).do.js",
+    "*.jsrs": "$(capture).mts, $(capture).js, $(capture).do.js",
   },
 
   // Silent the stylistic rules in you IDE, but still auto fix them

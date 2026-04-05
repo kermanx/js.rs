@@ -22,11 +22,6 @@
     "@jsrs/parser": "workspace:*",
     "vlq": "^2.0.4"
   },
-  "vitest": {
-    "include": [
-      "test/**/*.test.ts"
-    ]
-  },
   "devDependencies": {
     "@types/babel__core": "^7.20.5"
   }

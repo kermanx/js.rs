@@ -67,6 +67,9 @@ export function* generateStatement(node: SyntaxNode): Generator<Code> {
     case "use_declaration":
       yield* generateUse(node);
       break;
+    case "static_item":
+      yield* generateStaticItem(node);
+      break;
     case "match_expression":
       yield* generateMatch(node);
       break;
@@ -109,6 +112,26 @@ function* generateLocal(node: SyntaxNode): Generator<Code> {
   const value = node.childForFieldName("value");
   if (value) {
     yield ` = `;
+    yield* generateExpression(value);
+  }
+}
+
+function* generateStaticItem(node: SyntaxNode): Generator<Code> {
+  const mutable = node.namedChildren.some(c => c.type === "mutable_specifier");
+  yield mutable ? "let " : "const ";
+
+  const name = node.childForFieldName("name")!;
+  yield* generateIdentifier(name);
+
+  const type = node.childForFieldName("type");
+  if (type) {
+    yield ": ";
+    yield* generateType(type);
+  }
+
+  const value = node.childForFieldName("value");
+  if (value) {
+    yield " = ";
     yield* generateExpression(value);
   }
 }
