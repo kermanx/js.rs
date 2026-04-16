@@ -1,3 +1,5 @@
+import!({A} from "./struct-item.mts");
+
 impl A {
   const CONST_ITEM: number = 23;
 

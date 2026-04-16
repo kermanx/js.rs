@@ -137,12 +137,12 @@ function buildAnnotatedSnapshot(source: string, generated: string, mappings: any
           continue;
         const sourceIndent = raw.length - trimmed.length;
         const mappedCol = mappedGeneratedColumnBySourceLine.get(s);
-          const chosenIndent = mappedCol === undefined
+        const chosenIndent = mappedCol === undefined
           ? sourceIndent
           : mappedCol > sourceIndent + maxAllowedShift
-              ? sourceIndent
+            ? sourceIndent
             : Math.max(sourceIndent, mappedCol - 2);
-          const indent = " ".repeat(Math.min(maxCommentIndent, Math.max(0, chosenIndent)));
+        const indent = " ".repeat(Math.min(maxCommentIndent, Math.max(0, chosenIndent)));
         out.push(`//${indent}${trimmed}`);
       }
     }
@@ -161,8 +161,8 @@ function buildAnnotatedSnapshot(source: string, generated: string, mappings: any
       const chosenIndent = mappedCol === undefined
         ? sourceIndent
         : mappedCol > sourceIndent + maxAllowedShift
-            ? sourceIndent
-        : Math.max(sourceIndent, mappedCol - 2);
+          ? sourceIndent
+          : Math.max(sourceIndent, mappedCol - 2);
       const indent = " ".repeat(Math.min(maxCommentIndent, Math.max(0, chosenIndent)));
       out.push(`//${indent}${trimmed}`);
     }

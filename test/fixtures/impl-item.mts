@@ -1,4 +1,7 @@
-function __JSRS_impl_0_static() { return {
+//import!({A} from "./struct-item.mts");
+import  {A} from "./struct-item.mts" ;
+
+function __JSRS_impl_40_static() { return {
 //  const CONST_ITEM: number = 23;
 //  type AssociatedType = number;
 //  pub fn new(a: number, b: number) -> A {
@@ -8,9 +11,11 @@ new(a: number, b: number): A {
 //  }
   },
 } }
-type __JSRS_impl_0_static_T = ReturnType<typeof __JSRS_impl_0_static>;
-interface __JSRS_A__Ctor extends __JSRS_impl_0_static_T {}
-function __JSRS_impl_0() { return {
+type __JSRS_impl_40_static_T = ReturnType<typeof __JSRS_impl_40_static>;
+declare module "./struct-item.mts" {
+  interface __JSRS_A__Ctor extends __JSRS_impl_40_static_T {}
+}
+function __JSRS_impl_40() { return {
 //       impl A {
 //  pub fn add(&self) -> number {
 add(this:A): number {
@@ -19,7 +24,9 @@ add(this:A): number {
 //  }
   },
 } }
-type __JSRS_impl_0_T = ReturnType<typeof __JSRS_impl_0>;
-interface A extends __JSRS_impl_0_T {}
+type __JSRS_impl_40_T = ReturnType<typeof __JSRS_impl_40>;
+declare module "./struct-item.mts" {
+  interface A extends __JSRS_impl_40_T {}
+}
 //}
 

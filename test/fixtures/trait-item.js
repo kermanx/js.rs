@@ -1,5 +1,5 @@
 import * as _r from "@jsrs/runtime";
-function Trait() {}
+export function Trait() {}
 Trait.AssociatedType = number;
 Trait.CONST_ITEM = 23;
 Trait.static_method = function () {

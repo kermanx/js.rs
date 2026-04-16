@@ -1,9 +1,18 @@
 import type { SyntaxNode } from "tree-sitter";
 import type { Code } from "../types";
 import { context } from "./context";
-import { escapeCtorName } from "./escaping";
+import { escapeCtorImplName, escapeCtorName } from "./escaping";
 import { FunctionKind, generateFunction } from "./function";
 import { generateTypeParameters, getTypeParamPlaceholders } from "./type";
+
+function* generateInterfaceExtends(exporting: string, importedModule: string | undefined, name: string, extendsClause: string): Generator<Code> {
+  if (importedModule) {
+    yield `declare module "${importedModule}" {\n  interface ${name} extends ${extendsClause} {}\n}\n`;
+  }
+  else {
+    yield `${exporting}interface ${name} extends ${extendsClause} {}\n`;
+  }
+}
 
 export function* generateImpl(node: SyntaxNode): Generator<
   Code
@@ -28,8 +37,21 @@ export function* generateImpl(node: SyntaxNode): Generator<
     }
   }
 
+  const importedModule = context.importedFrom.get(name);
+  const uid = node.startIndex;
+
+  if (trait) {
+    const traitName = trait.text;
+    const traitModule = context.importedFrom.get(traitName);
+    if (traitModule) {
+      yield `type ${escapeCtorImplName(traitName)}_${uid} = import("${traitModule}").${escapeCtorImplName(traitName)};\n`;
+      yield `type ${escapeCtorName(traitName)}_${uid} = import("${traitModule}").${escapeCtorName(traitName)};\n`;
+      yield `type ${traitName}_${uid} = import("${traitModule}").${traitName};\n`;
+    }
+  }
+
   if (staticMethods.length > 0) {
-    const implName = `__JSRS_impl_${node.startIndex}_static`;
+    const implName = `__JSRS_impl_${uid}_static`;
     yield `function ${implName}`;
     yield* generateTypeParameters(typeParams);
     yield `() { return {\n`;
@@ -41,20 +63,22 @@ export function* generateImpl(node: SyntaxNode): Generator<
 
     if (trait) {
       const traitName = trait.text;
-      yield `satisfies ${escapeCtorName(traitName)}; }\n`;
-      // TODO: declare module "..." {
-      yield `${exporting}interface ${escapeCtorName(name)} extends ${escapeCtorName(traitName)} {}\n`;
+      const traitModule = context.importedFrom.get(traitName);
+      const ctorImplAlias = traitModule ? `${escapeCtorImplName(traitName)}_${uid}` : escapeCtorImplName(traitName);
+      const ctorAlias = traitModule ? `${escapeCtorName(traitName)}_${uid}` : escapeCtorName(traitName);
+      yield `satisfies ${ctorImplAlias}; }\n`;
+      yield* generateInterfaceExtends(exporting, importedModule, escapeCtorName(name), ctorAlias);
     }
     else {
       yield "}\n";
       const typeParamPlaceholders = getTypeParamPlaceholders(typeParams);
       yield `type ${implName}_T${typeParamPlaceholders} = ReturnType<typeof ${implName}${typeParamPlaceholders}>;\n`;
-      yield `${exporting}interface ${escapeCtorName(name)} extends ${implName}_T${typeParamPlaceholders} {}\n`;
+      yield* generateInterfaceExtends(exporting, importedModule, escapeCtorName(name), `${implName}_T${typeParamPlaceholders}`);
     }
   }
 
   if (instanceMethods.length > 0) {
-    const implName = `__JSRS_impl_${node.startIndex}`;
+    const implName = `__JSRS_impl_${uid}`;
     yield `function ${implName}`;
     yield* generateTypeParameters(typeParams);
     yield `() { return {\n`;
@@ -66,15 +90,16 @@ export function* generateImpl(node: SyntaxNode): Generator<
 
     if (trait) {
       const traitName = trait.text;
-      yield `satisfies ${traitName}; }\n`;
-      // TODO: declare module "..." {
-      yield `${exporting}interface ${name} extends ${traitName} {}\n`;
+      const traitModule = context.importedFrom.get(traitName);
+      const instanceAlias = traitModule ? `${traitName}_${uid}` : traitName;
+      yield `satisfies ${instanceAlias}; }\n`;
+      yield* generateInterfaceExtends(exporting, importedModule, name, instanceAlias);
     }
     else {
       yield "}\n";
       const typeParamPlaceholders = getTypeParamPlaceholders(typeParams);
       yield `type ${implName}_T${typeParamPlaceholders} = ReturnType<typeof ${implName}${typeParamPlaceholders}>;\n`;
-      yield `${exporting}interface ${name} extends ${implName}_T${typeParamPlaceholders} {}\n`;
+      yield* generateInterfaceExtends(exporting, importedModule, name, `${implName}_T${typeParamPlaceholders}`);
     }
   }
 }

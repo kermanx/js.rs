@@ -10,6 +10,7 @@ import { generateMacroInvocation } from "./macro";
 import { generateMatch, getPatternBindings } from "./match";
 import { generatePrelude } from "./prelude";
 import { generateStruct, generateStructExpression } from "./struct";
+import { generateTrait } from "./trait";
 import { generateType } from "./type";
 import { generateUse } from "./use";
 import { between, generateChildren, wrapWith } from "./utils";
@@ -70,6 +71,9 @@ export function* generateStatement(node: SyntaxNode): Generator<Code> {
     case "static_item":
       yield* generateStaticItem(node);
       break;
+    case "const_item":
+      yield* generateConstItem(node);
+      break;
     case "match_expression":
       yield* generateMatch(node);
       break;
@@ -81,6 +85,9 @@ export function* generateStatement(node: SyntaxNode): Generator<Code> {
       break;
     case "macro_invocation":
       yield* generateMacroInvocation(node);
+      break;
+    case "trait_item":
+      yield* generateTrait(node);
       break;
     default:
       yield* generateExpression(node);
@@ -112,6 +119,26 @@ function* generateLocal(node: SyntaxNode): Generator<Code> {
   const value = node.childForFieldName("value");
   if (value) {
     yield ` = `;
+    yield* generateExpression(value);
+  }
+}
+
+function* generateConstItem(node: SyntaxNode): Generator<Code> {
+  const mutable = node.namedChildren[0]?.type === "visibility_modifier";
+  yield mutable ? "export const " : "const ";
+
+  const name = node.childForFieldName("name")!;
+  yield* generateIdentifier(name);
+
+  const type = node.childForFieldName("type");
+  if (type) {
+    yield ": ";
+    yield* generateType(type);
+  }
+
+  const value = node.childForFieldName("value");
+  if (value) {
+    yield " = ";
     yield* generateExpression(value);
   }
 }
@@ -675,7 +702,7 @@ function* generateReturnExpression(node: SyntaxNode): Generator<Code> {
   const [keyword, value] = node.children;
 
   if (context.needCaptureReturn) {
-    const typeCode = context.returnType[context.returnType.length - 1];
+    const typeCode = context.returnType.at(-1);
     if (typeCode) {
       yield `(`;
       if (value) {

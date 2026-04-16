@@ -4,6 +4,7 @@ class CodegenContext {
   needCaptureReturn = 0;
   returnType: (Code[] | null)[] = [];
   exportingTypes = new Set<string>();
+  importedFrom = new Map<string, string>();
 }
 
 // TODO: Make this not singleton

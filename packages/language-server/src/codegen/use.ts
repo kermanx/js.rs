@@ -159,7 +159,7 @@ export function* generateUse(node: SyntaxNode): Generator<Code> {
   }
 
   function generatePath(node: SyntaxNode, path: string): Generator<Code> {
-    if (path.startsWith(".") && !path.match(/\.[^/]*$/)) {
+    if (path.startsWith(".") && !/\.[^/]*$/.test(path)) {
       path = `${path}.jsrs`;
     }
     return wrapWith(

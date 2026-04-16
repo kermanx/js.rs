@@ -27,14 +27,14 @@ export function* generateEnum(node: SyntaxNode): Generator<Code> {
   yield ` { [${symbolName}]: typeof ${symbolName} }\n`;
 
   const ctorName = escapeCtorName(name.text);
-  yield `${exporting}interface ${ctorName}`;
-  if (typeParameters)
-    yield* generateTypeParameters(typeParameters);
-  yield ` {\n`;
+  const anyEnumType: Code[] = typeParameters
+    ? [name, `<${typeParameters.namedChildren.map(() => "any").join(", ")}>`]
+    : [name];
+  yield `${exporting}interface ${ctorName} {\n`;
   if (body) {
     for (const child of body.namedChildren) {
       if (child.type === "enum_variant") {
-        yield* generateEnumVariant(child, enumType);
+        yield* generateEnumVariant(child, enumType, anyEnumType, typeParameters);
       }
     }
   }
@@ -44,7 +44,7 @@ export function* generateEnum(node: SyntaxNode): Generator<Code> {
   yield `!: ${ctorName}\n`;
 }
 
-function* generateEnumVariant(node: SyntaxNode, enumType: Code[]): Generator <Code> {
+function* generateEnumVariant(node: SyntaxNode, enumType: Code[], anyEnumType: Code[], typeParameters: SyntaxNode | null): Generator<Code> {
   if (node.type === "enum_variant") {
     const name = node.childForFieldName("name")!;
     const body = node.childForFieldName("body");
@@ -52,6 +52,7 @@ function* generateEnumVariant(node: SyntaxNode, enumType: Code[]): Generator <Co
     yield `  `;
     yield name;
     if (body) {
+      yield* generateTypeParameters(typeParameters);
       yield "(";
       if (body.type === "ordered_field_declaration_list") {
         let index = 0;
@@ -66,9 +67,13 @@ function* generateEnumVariant(node: SyntaxNode, enumType: Code[]): Generator <Co
         yield* generateFieldDeclarationList(body);
       }
       yield `)`;
+      yield `: `;
+      yield* enumType;
     }
-    yield `: `;
-    yield* enumType;
+    else {
+      yield `: `;
+      yield* anyEnumType;
+    }
     yield `;\n`;
   }
 }

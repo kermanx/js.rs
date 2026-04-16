@@ -1,6 +1,6 @@
 //pub const ANSWER: number = 42;
-(undefined as any);
+export const ANSWER: number = 42;
 
-//const LOCAL_X: number = 1 + 2;
-(undefined as any);
+//    const LOCAL_X: number = 1 + 2;
+const LOCAL_X: number = 1 + 2;
 

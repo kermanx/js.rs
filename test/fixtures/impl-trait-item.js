@@ -1,10 +1,12 @@
 import * as _r from "@jsrs/runtime";
-_r.implTrait(StructA, Trait);
-StructA.AssociatedType = number;
-StructA.CONST_ITEM = 23;
-StructA.static_method = function () {
-  log();
+import { A } from "./struct-item.mts";
+import { Trait } from "./trait-item.mts";
+_r.implTrait(A, Trait);
+A.AssociatedType = number;
+A.CONST_ITEM = 23;
+A.static_method = function () {
+  console.log();
 };
-StructA.prototype.method = function () {
-  log();
+A.prototype.method = function () {
+  console.log();
 };

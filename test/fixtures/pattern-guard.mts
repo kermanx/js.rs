@@ -1,11 +1,11 @@
 const __JSRS_Option_Symbol = Symbol();
 //pub enum Option<T> {
 export interface Option<T> { [__JSRS_Option_Symbol]: typeof __JSRS_Option_Symbol }
-export interface __JSRS_Option__Ctor<T> {
+export interface __JSRS_Option__Ctor {
 //  Some(T),
-  Some(_0: T,): Option<T>;
+  Some<T>(_0: T,): Option<T>;
 //  None,
-  None: Option<T>;
+  None: Option<any>;
 }
 export var Option!: __JSRS_Option__Ctor
 //}

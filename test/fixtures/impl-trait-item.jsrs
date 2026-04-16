@@ -1,10 +1,13 @@
-impl Trait for StructA {
+import!({A} from "./struct-item.mts");
+import!({Trait} from "./trait-item.mts");
+
+impl Trait for A {
   type AssociatedType = number;
   const CONST_ITEM: number = 23;
   fn static_method() {
-    log();
+    console.log();
   }
   fn method(&self) {
-    log();
+    console.log();
   }
 }

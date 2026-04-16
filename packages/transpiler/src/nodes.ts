@@ -232,6 +232,9 @@ const _T = defineTranspilerComponent({
         break;
       case "empty_statement":
         break;
+      case "macro_invocation":
+        yield* this.MacroInvocation(node);
+        break;
       default:
         yield* this.Expr(node);
     }
@@ -1056,6 +1059,13 @@ const _T = defineTranspilerComponent({
       }
     }
     yield ")";
+  },
+
+  * MacroInvocation(node: SyntaxNode): Code {
+    const macro = node.childForFieldName("macro")!;
+    if (macro.text === "import") {
+      yield [node.text.replaceAll(/[!()]/g, " "), node.startPosition];
+    }
   },
 
   * Use(use: SyntaxNode): Code {

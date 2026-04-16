@@ -12,7 +12,7 @@ export function wrapWith(
   start: number,
   end: number,
   features: CodeInformation,
-  codes: () => Iterable<Code>
+  codes: () => Iterable<Code>,
 ): Generator<Code>;
 export function* wrapWith(
   start: number,

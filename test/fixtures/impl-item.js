@@ -1,4 +1,5 @@
 import * as _r from "@jsrs/runtime";
+import { A } from "./struct-item.mts";
 A.CONST_ITEM = 23;
 A.AssociatedType = number;
 A.new = function (a, b) {

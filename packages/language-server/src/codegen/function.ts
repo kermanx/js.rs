@@ -22,6 +22,10 @@ export function* generateFunction(
       if (node.namedChildren[0]?.type === "visibility_modifier") {
         yield `export `;
       }
+      const modifiers = node.namedChildren.find(c => c.type === "function_modifiers");
+      if (modifiers?.text.includes("async")) {
+        yield `async `;
+      }
       yield `function `;
     }
 
